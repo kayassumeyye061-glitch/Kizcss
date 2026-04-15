@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#FF6B9D">
+<title>Kizcs</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--rose:#FF6B9D;--rose-light:#FFD6E7;--rose-dark:#E8447A;--mint:#4ECDC4;--cream:#FFF8F3;--charcoal:#2D2D2D;--gray:#8A8A8A;--gray-light:#F5F5F5;--shadow:0 4px 24px rgba(255,107,157,.10);--shadow-lg:0 8px 40px rgba(255,107,157,.18);--radius:20px;--radius-sm:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;overflow-x:hidden}
+#loadingOverlay{position:fixed;inset:0;background:var(--rose);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .4s}
+.logo-big{font-family:'Fraunces',serif;font-size:48px;font-weight:900;color:#fff}
+.logo-big span{color:#FFE66D}
+.spinner{width:30px;height:30px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-top:20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#authScreen{display:none;min-height:100vh;background:linear-gradient(135deg,#FF6B9D,#FFB3CC);align-items:center;justify-content:center;flex-direction:column;padding:40px 24px;text-align:center}
+#authScreen.active{display:flex}
+.auth-card{background:#fff;border-radius:28px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.auth-card h3{font-family:'Fraunces',serif;font-size:22px;margin-bottom:6px}
+.auth-card p{font-size:13px;color:var(--gray);margin-bottom:20px}
+.auth-tabs{display:flex;background:var(--gray-light);border-radius:12px;padding:4px;margin-bottom:20px}
+.auth-tab{flex:1;padding:8px;border-radius:10px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--gray);transition:all .2s}
+.auth-tab.active{background:#fff;color:var(--rose);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.auth-error{background:#FFF0F0;border:1px solid #FFB3B3;border-radius:10px;padding:10px 14px;font-size:13px;color:#E74C3C;margin-bottom:12px;display:none;text-align:left}
+.auth-error.show{display:block}
+.f-input{width:100%;padding:13px 16px;border:2px solid #F0E8EC;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);background:#fff;outline:none;transition:border-color .2s;display:block;margin-bottom:12px}
+.f-input:focus{border-color:var(--rose)}
+.f-select{width:100%;padding:13px 16px;border:2px solid #F0E8EC;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);background:#fff;outline:none;transition:border-color .2s;display:block;margin-bottom:12px}
+.f-textarea{width:100%;padding:13px 16px;border:2px solid #F0E8EC;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);background:#fff;outline:none;resize:none;min-height:100px;transition:border-color .2s;display:block}
+.f-input:focus,.f-select:focus,.f-textarea:focus{border-color:var(--rose)}
+.btn-auth{width:100%;padding:14px;border-radius:14px;background:var(--rose);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;box-shadow:0 4px 16px rgba(255,107,157,.3);margin-top:4px}
+.btn-auth:disabled{opacity:.6;cursor:not-allowed}
+#appShell{display:none}
+#appShell.active{display:block}
+.screen{display:none;min-height:100vh;padding-bottom:80px}
+/* ADMIN */
+#adminPanel{display:none;min-height:100vh;padding-bottom:80px}
+#adminPanel.active{display:block}
+.admin-topbar{background:linear-gradient(135deg,#2D2D2D,#444);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.admin-topbar .logo{font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#fff}
+.admin-topbar .logo span{color:#FFE66D}
+.admin-badge-top{background:var(--rose);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:6px}
+.a-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.a-stat{background:#fff;border-radius:var(--radius-sm);padding:16px;box-shadow:var(--shadow);text-align:center}
+.a-stat .n{font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--rose)}
+.a-stat .l{font-size:11px;color:var(--gray);margin-top:2px;font-weight:600}
+.a-tabs{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+.a-tabs::-webkit-scrollbar{display:none}
+.a-tab{white-space:nowrap;padding:8px 14px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:var(--gray-light);color:var(--gray);transition:all .2s}
+.a-tab.active{background:var(--rose);color:#fff}
+.a-section{display:none;padding:0 16px 16px}
+.a-section.active{display:block}
+.a-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.a-card-header{padding:12px 16px;border-bottom:1px solid #F0E8EC;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.a-row{padding:12px 16px;border-bottom:1px solid #F5F5F5;font-size:13px}
+.a-row:last-child{border-bottom:none}
+.a-row-title{font-weight:600;margin-bottom:3px}
+.a-row-meta{font-size:11px;color:var(--gray)}
+.a-row-actions{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.abtn{padding:5px 12px;border-radius:99px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;transition:all .2s}
+.abtn-danger{background:#F8D7DA;color:#721C24}
+.abtn-danger:hover{background:#E74C3C;color:#fff}
+.abtn-success{background:#D4EDDA;color:#155724}
+.abtn-success:hover{background:#27AE60;color:#fff}
+.abtn-warn{background:#FFF3CD;color:#856404}
+.abtn-warn:hover{background:#F39C12;color:#fff}
+.badge-pending{background:#FFF3CD;color:#856404;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block}
+.badge-resolved{background:#D4EDDA;color:#155724;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block}
+.badge-banned{background:#F8D7DA;color:#721C24;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block}
+.badge-active{background:#D4EDDA;color:#155724;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block}
+
+.screen.active{display:block}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #F0E8EC;display:flex;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.06)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;transition:all .2s;border:none;background:none;color:var(--gray);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500}
+.nav-item.active{color:var(--rose)}
+.nav-item.active .ni{transform:translateY(-2px)}
+.ni{font-size:22px;margin-bottom:2px;transition:transform .2s}
+.header{background:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F0E8EC;position:sticky;top:0;z-index:50}
+.logo{font-family:'Fraunces',serif;font-size:26px;font-weight:900;color:var(--rose);letter-spacing:-1px}
+.logo span{color:var(--mint)}
+.ava-sm{width:36px;height:36px;border-radius:50%;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--rose);cursor:pointer;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:99px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--rose);color:#fff;box-shadow:0 4px 16px rgba(255,107,157,.3)}
+.btn-primary:hover{background:var(--rose-dark);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--rose);border:2px solid var(--rose)}
+.btn-mint{background:var(--mint);color:#fff}
+.btn-full{width:100%;justify-content:center}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
+.hero{background:linear-gradient(135deg,#FF6B9D,#FF8FB1,#FFB3CC);padding:28px 20px 36px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.1)}
+.hero-greeting{color:rgba(255,255,255,.85);font-size:14px;margin-bottom:4px}
+.hero-title{font-family:'Fraunces',serif;font-size:26px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:20px}
+.search-bar{background:#fff;border-radius:16px;display:flex;align-items:center;gap:10px;padding:12px 16px;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.search-bar input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);background:transparent}
+.search-bar input::placeholder{color:var(--gray)}
+.quick-cats{display:flex;gap:10px;padding:16px 20px;overflow-x:auto;scrollbar-width:none}
+.quick-cats::-webkit-scrollbar{display:none}
+.cat-chip{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:68px;cursor:pointer;padding:12px 8px;border-radius:16px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:all .2s;border:2px solid transparent}
+.cat-chip:hover,.cat-chip.active{border-color:var(--rose);background:var(--rose-light)}
+.cat-chip .ce{font-size:24px}
+.cat-chip .cl{font-size:10px;font-weight:600;color:var(--charcoal);text-align:center}
+.section{padding:20px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700}
+.listings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.listing-card{background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:all .2s;position:relative}
+.listing-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.listing-img{width:100%;height:140px;background:linear-gradient(135deg,#FFD6E7,#C8F4F1);display:flex;align-items:center;justify-content:center;font-size:52px;overflow:hidden}
+.listing-img img{width:100%;height:100%;object-fit:cover}
+.listing-badge{position:absolute;top:8px;left:8px;background:var(--rose);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:99px}
+.listing-fav{position:absolute;top:8px;right:8px;background:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1);border:none;transition:transform .2s}
+.listing-fav:hover{transform:scale(1.2)}
+.listing-info{padding:10px}
+.listing-title{font-size:13px;font-weight:600;margin-bottom:4px;line-height:1.3}
+.listing-price{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--rose)}
+.listing-loc{font-size:11px;color:var(--gray);margin-top:4px}
+.listing-cond{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;margin-top:6px}
+.cond-likeNew{background:#E8F8F5;color:#27AE60}
+.cond-good{background:#FEF9E7;color:#F39C12}
+.cond-fair{background:#FDEBD0;color:#E67E22}
+.community-banner{background:linear-gradient(135deg,#4ECDC4,#44A89F);border-radius:var(--radius);padding:20px;display:flex;align-items:center;gap:16px;cursor:pointer}
+.community-banner h3{font-family:'Fraunces',serif;color:#fff;font-size:18px;margin-bottom:4px}
+.community-banner p{color:rgba(255,255,255,.85);font-size:13px}
+.groups-scroll{display:flex;gap:10px;padding:14px 20px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid #F0E8EC}
+.groups-scroll::-webkit-scrollbar{display:none}
+.group-tab{white-space:nowrap;padding:8px 14px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all .2s;background:var(--gray-light);color:var(--gray);flex-shrink:0}
+.group-tab.active{background:var(--rose);color:#fff}
+.group-tab.kahvehane{background:#8B4513;color:#fff;opacity:.9}
+.group-tab.kahvehane.active{background:#6B3410;opacity:1}
+.post-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.post-main{padding:16px}
+.post-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.p-ava{width:40px;height:40px;border-radius:50%;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--rose);flex-shrink:0;cursor:pointer;transition:opacity .2s}
+.p-ava:hover{opacity:.8}
+.post-meta{flex:1}
+.post-author{font-size:14px;font-weight:600;cursor:pointer;color:var(--charcoal)}
+.post-author:hover{color:var(--rose)}
+.post-sub{display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap}
+.post-time{font-size:11px;color:var(--gray)}
+.post-gtag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--rose-light);color:var(--rose)}
+.post-gtag.kahvehane{background:#F5DEB3;color:#8B4513}
+.post-more{background:none;border:none;color:var(--gray);font-size:22px;cursor:pointer;padding:0 4px;line-height:1}
+.post-text{font-size:14px;line-height:1.6;color:var(--charcoal);margin-bottom:10px;white-space:pre-wrap;word-break:break-word}
+.post-text.collapsed{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}
+.read-more{color:var(--rose);font-size:13px;font-weight:600;cursor:pointer;background:none;border:none;padding:0;margin-bottom:10px;display:block}
+.post-img-grid{display:grid;gap:3px;margin-bottom:12px;border-radius:var(--radius-sm);overflow:hidden}
+.post-img-grid.c1 img{width:100%;max-height:260px;object-fit:cover;cursor:pointer;display:block}
+.post-img-grid.c2{grid-template-columns:1fr 1fr}
+.post-img-grid.c3{grid-template-columns:1fr 1fr 1fr}
+.post-img-grid.c2 img,.post-img-grid.c3 img{width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;display:block}
+.post-actions{display:flex;border-top:1px solid #F5F0F2}
+.action-btn{display:flex;align-items:center;gap:5px;padding:10px 8px;font-size:13px;color:var(--gray);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;font-weight:500;flex:1;justify-content:center;border-radius:8px;transition:all .15s}
+.action-btn:hover{background:var(--gray-light)}
+.action-btn.liked{color:var(--rose)}
+.comments-section{background:#FAFAFA;border-top:1px solid #F0E8EC;padding:12px 16px}
+.comment-item{display:flex;gap:8px;margin-bottom:12px}
+.c-ava{width:30px;height:30px;border-radius:50%;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--rose);flex-shrink:0;cursor:pointer}
+.c-bubble{flex:1}
+.c-inner{background:#fff;border-radius:0 12px 12px 12px;padding:8px 12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.c-author{font-size:12px;font-weight:700;margin-bottom:2px;cursor:pointer;color:var(--charcoal)}
+.c-author:hover{color:var(--rose)}
+.c-text{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.c-meta{display:flex;align-items:center;gap:10px;margin-top:4px}
+.c-time{font-size:10px;color:var(--gray)}
+.c-like{font-size:11px;color:var(--gray);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif}
+.c-like:hover{color:var(--rose)}
+.c-reply-btn{font-size:11px;color:var(--rose);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;font-weight:600}
+.reply-row{display:flex;gap:6px;margin:6px 0 4px 36px}
+.reply-bbl{flex:1;background:#fff;border-radius:0 10px 10px 10px;padding:6px 10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.reply-author{font-size:11px;font-weight:700;color:var(--rose);margin-bottom:1px}
+.reply-text{font-size:12px;line-height:1.5}
+.c-input-row{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.c-input-wrap{flex:1;background:#fff;border-radius:20px;border:1.5px solid #F0E8EC;display:flex;align-items:flex-end;gap:4px;padding:6px 10px;transition:border-color .2s}
+.c-input-wrap:focus-within{border-color:var(--rose)}
+.c-input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:transparent;resize:none;max-height:80px;min-height:20px;line-height:1.4}
+.c-send{background:none;border:none;cursor:pointer;font-size:18px;padding:0;transition:transform .15s;flex-shrink:0}
+.c-send:hover{transform:scale(1.2)}
+/* KAHVEHANE */
+.kahvehane-banner{background:linear-gradient(135deg,#8B4513,#D2691E);border-radius:var(--radius);padding:16px 20px;margin:0 16px 14px;display:flex;align-items:center;gap:12px}
+.kahvehane-banner h4{font-family:'Fraunces',serif;color:#fff;font-size:16px;margin-bottom:2px}
+.kahvehane-banner p{color:rgba(255,255,255,.85);font-size:12px}
+/* SELL */
+.sell-hero{background:linear-gradient(135deg,#4ECDC4,#FFB3CC);padding:28px 20px;text-align:center}
+.sell-hero h2{font-family:'Fraunces',serif;font-size:26px;color:#fff;font-weight:900;margin-bottom:8px}
+.sell-hero p{color:rgba(255,255,255,.9);font-size:14px}
+.f-label{font-size:13px;font-weight:600;margin-bottom:8px;display:block;color:var(--charcoal)}
+.f-group{margin-bottom:16px}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px}
+.photo-thumb-wrap{position:relative}
+.photo-thumb-wrap img{width:100%;aspect-ratio:1;border-radius:var(--radius-sm);object-fit:cover}
+.photo-remove{position:absolute;top:-6px;right:-6px;background:var(--charcoal);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;border:none}
+.photo-add{width:100%;aspect-ratio:1;border:2px dashed var(--rose-light);border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#fff;font-size:24px;color:var(--rose);transition:all .2s;gap:4px}
+.photo-add small{font-size:10px;color:var(--gray)}
+.photo-add:hover{background:var(--rose-light)}
+.cond-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cond-opt{padding:12px 8px;border-radius:var(--radius-sm);border:2px solid #F0E8EC;text-align:center;cursor:pointer;transition:all .2s}
+.cond-opt.selected{border-color:var(--rose);background:var(--rose-light)}
+.cond-opt .ce{font-size:20px;margin-bottom:4px}
+.cond-opt .cl{font-size:12px;font-weight:600}
+.cond-opt .cd{font-size:10px;color:var(--gray);margin-top:2px}
+.info-box{background:#FFF8F3;border-left:4px solid var(--rose);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:14px 16px;font-size:13px;color:var(--charcoal);line-height:1.5;margin-bottom:16px}
+.info-box strong{color:var(--rose)}
+.upload-progress{width:100%;height:4px;background:#F0E8EC;border-radius:99px;overflow:hidden;margin-top:8px;display:none}
+.upload-progress-bar{height:100%;background:var(--rose);border-radius:99px;transition:width .3s;width:0%}
+/* PROFILE */
+.profile-header{background:linear-gradient(135deg,#FFB3CC,#FF6B9D);padding:30px 20px 50px;text-align:center}
+.profile-ava-big{width:80px;height:80px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:var(--rose);margin:0 auto 12px;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.profile-name{font-family:'Fraunces',serif;font-size:24px;color:#fff;font-weight:700}
+.profile-meta{color:rgba(255,255,255,.85);font-size:13px;margin-top:4px}
+.profile-stats{background:#fff;border-radius:var(--radius);margin:-24px 20px 0;padding:16px;box-shadow:var(--shadow);display:flex;position:relative;z-index:2}
+.stat-item{flex:1;text-align:center}
+.stat-item:not(:last-child){border-right:1px solid #F0E8EC}
+.stat-num{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--rose)}
+.stat-label{font-size:11px;color:var(--gray);margin-top:2px}
+.menu-list{padding:20px}
+.menu-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border-radius:var(--radius-sm);margin-bottom:10px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.04);border:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.menu-item:hover{box-shadow:var(--shadow);transform:translateX(4px)}
+.menu-icon{font-size:22px;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.menu-label{flex:1;font-size:14px;font-weight:500;color:var(--charcoal)}
+.menu-arrow{color:var(--gray);font-size:16px}
+/* USER PROFILE MODAL */
+.user-profile-header{background:linear-gradient(135deg,#FF8FB1,#FF6B9D);padding:24px 20px 40px;text-align:center;border-radius:28px 28px 0 0;margin:-20px -20px 0}
+.user-ava-big{width:72px;height:72px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:var(--rose);margin:0 auto 10px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.user-profile-name{font-family:'Fraunces',serif;font-size:22px;color:#fff;font-weight:700}
+.user-profile-meta{color:rgba(255,255,255,.85);font-size:12px;margin-top:3px}
+.user-profile-stats{background:#fff;border-radius:var(--radius);margin:-20px 0 16px;padding:14px;box-shadow:var(--shadow);display:flex}
+.follow-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;margin-bottom:12px}
+.follow-btn.following{background:var(--gray-light);color:var(--gray)}
+.follow-btn.not-following{background:var(--rose);color:#fff;box-shadow:0 4px 16px rgba(255,107,157,.3)}
+/* STARS */
+.stars{display:flex;gap:4px;justify-content:center;margin:8px 0}
+.star{font-size:28px;cursor:pointer;transition:transform .15s;filter:grayscale(1)}
+.star.active{filter:none}
+.star:hover{transform:scale(1.2)}
+/* REVIEW CARD */
+.review-card{background:#fff;border-radius:var(--radius-sm);padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:10px}
+.review-stars{color:#FFD700;font-size:14px;margin-bottom:4px}
+.review-text{font-size:13px;color:#444;line-height:1.5}
+.review-author{font-size:11px;color:var(--gray);margin-top:6px}
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:28px 28px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding:20px 20px 40px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:#E0E0E0;border-radius:99px;margin:0 auto 18px;cursor:pointer}
+.modal-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;margin-bottom:16px}
+.group-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.group-btn{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid #F0E8EC;background:#fff;color:var(--gray);transition:all .2s}
+.group-btn.selected{border-color:var(--rose);background:var(--rose-light);color:var(--rose)}
+.group-btn.kahvehane-btn{border-color:#D2691E;color:#8B4513}
+.group-btn.kahvehane-btn.selected{background:#F5DEB3;border-color:#8B4513}
+.post-textarea{width:100%;padding:14px 16px;border:2px solid #F0E8EC;border-radius:16px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--charcoal);background:#fff;outline:none;resize:none;min-height:120px;transition:border-color .2s}
+.post-textarea:focus{border-color:var(--rose)}
+.toolbar-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:6px;border-radius:8px;transition:background .15s}
+.toolbar-btn:hover{background:var(--gray-light)}
+.photo-preview-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.photo-prev-item{position:relative}
+.photo-prev-item img{width:72px;height:72px;border-radius:10px;object-fit:cover}
+.photo-prev-remove{position:absolute;top:-6px;right:-6px;background:var(--charcoal);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;border:none}
+.option-item{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #F5F5F5;cursor:pointer}
+.option-item span:last-child{font-size:14px;font-weight:500}
+.option-item:hover span:last-child{color:var(--rose)}
+.detail-img{width:calc(100% + 40px);margin:-20px -20px 0;height:260px;background:linear-gradient(135deg,#FFD6E7,#C8F4F1);display:flex;align-items:center;justify-content:center;font-size:90px;overflow:hidden}
+.detail-img img{width:100%;height:100%;object-fit:cover}
+.img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;align-items:center;justify-content:center}
+.img-modal.open{display:flex}
+.img-modal img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:12px}
+.img-modal-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--charcoal);color:#fff;padding:12px 20px;border-radius:99px;font-size:13px;font-weight:500;z-index:400;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:#27AE60}
+.toast.error{background:#E74C3C}
+.empty{text-align:center;padding:50px 20px}
+.empty .ee{font-size:52px;display:block;margin-bottom:12px}
+.empty h3{font-family:'Fraunces',serif;font-size:20px;margin-bottom:8px}
+.empty p{font-size:13px;color:var(--gray);line-height:1.5}
+.fab{position:fixed;bottom:90px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--rose);color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,107,157,.4);cursor:pointer;border:none;z-index:99;transition:all .2s}
+.fab:hover{transform:scale(1.1)}
+::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="logo-big">Kiz<span>cs</span></div>
+  <p style="color:rgba(255,255,255,.8);margin-top:8px;font-size:14px;">Yükleniyor...</p>
+  <div class="spinner"></div>
+</div>
+
+<div id="authScreen">
+  <div class="logo-big" style="margin-bottom:8px;">Kiz<span>cs</span></div>
+  <p style="color:rgba(255,255,255,.9);font-size:15px;margin-bottom:28px;">Anne topluluğuna hoş geldin 🌸</p>
+  <div class="auth-card">
+    <h3>Hesabına Giriş Yap</h3>
+    <p>İlan ver, toplulukla paylaş ve beğen.</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Giriş Yap</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Kayıt Ol</button>
+    </div>
+    <div id="authError" class="auth-error"></div>
+    <input class="f-input" type="text" id="authName" placeholder="Adın (örn: Zeynep)" style="display:none;">
+    <input class="f-input" type="email" id="authEmail" placeholder="E-posta adresin">
+    <input class="f-input" type="password" id="authPassword" placeholder="Şifren (min. 6 karakter)" style="margin-bottom:0;">
+    <button class="btn-auth" id="authBtn" onclick="handleAuth()">Giriş Yap</button>
+    <p style="text-align:center;margin-top:14px;"><button onclick="openForgotPassword()" style="background:none;border:none;color:var(--rose);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">Şifremi Unuttum</button></p>
+  </div>
+</div>
+
+<div id="appShell">
+  <!-- HOME -->
+  <div class="screen active" id="screen-home">
+    <div class="hero">
+      <p class="hero-greeting" id="heroGreeting">Merhaba! 👋</p>
+      <h1 class="hero-title">Bebek eşyaları<br>hak ettikleri<br>yuvayı bulur.</h1>
+      <div class="search-bar"><span>🔍</span><input type="text" placeholder="Puset, kıyafet, oyuncak..." id="searchInput"></div>
+    </div>
+    <div class="quick-cats">
+      <div class="cat-chip active" onclick="filterCat(this,'all')"><div class="ce">✨</div><div class="cl">Tümü</div></div>
+      <div class="cat-chip" onclick="filterCat(this,'puset')"><div class="ce">🛒</div><div class="cl">Puset</div></div>
+      <div class="cat-chip" onclick="filterCat(this,'giysi')"><div class="ce">👕</div><div class="cl">Giysi</div></div>
+      <div class="cat-chip" onclick="filterCat(this,'oyuncak')"><div class="ce">🧸</div><div class="cl">Oyuncak</div></div>
+      <div class="cat-chip" onclick="filterCat(this,'karyola')"><div class="ce">🛏️</div><div class="cl">Karyola</div></div>
+      <div class="cat-chip" onclick="filterCat(this,'mama')"><div class="ce">🍼</div><div class="cl">Mama</div></div>
+      <div class="cat-chip" onclick="filterCat(this,'guvenlik')"><div class="ce">🛡️</div><div class="cl">Güvenlik</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><h2 class="section-title">Son İlanlar</h2></div>
+      <div class="listings-grid" id="listingsGrid"><div class="empty" style="grid-column:span 2"><span class="ee">⏳</span><p>Yükleniyor...</p></div></div>
+    </div>
+    <div class="section">
+      <div class="community-banner" onclick="switchTab('community')">
+        <div style="font-size:40px;">💬</div>
+        <div><h3>Anne Topluluk</h3><p>Sorular, tavsiyeler, deneyimler →</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMUNITY -->
+  <div class="screen" id="screen-community">
+    <div class="header">
+      <div class="logo">Kiz<span>cs</span></div>
+      <div style="position:relative;"><div class="ava-sm" id="headerAvatar" onclick="switchTab('profile')">A</div><div id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--rose);color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;"></div></div>
+    </div>
+    <div class="groups-scroll">
+      <div class="group-tab active" onclick="switchGroup(this,'all')">🌸 Tümü</div>
+      <div class="group-tab" onclick="switchGroup(this,'soru')">❓ Sorular</div>
+      <div class="group-tab" onclick="switchGroup(this,'tavsiye')">💡 Tavsiyeler</div>
+      <div class="group-tab" onclick="switchGroup(this,'deneyim')">❤️ Deneyimler</div>
+      <div class="group-tab" onclick="switchGroup(this,'takas')">♻️ Takas</div>
+      <div class="group-tab" onclick="switchGroup(this,'emzirme')">🍼 Emzirme</div>
+      <div class="group-tab" onclick="switchGroup(this,'saglik')">🏥 Sağlık</div>
+      <div class="group-tab kahvehane" onclick="switchGroup(this,'kahvehane')">☕ Kahvehane</div>
+    </div>
+    <div style="padding:14px 16px 100px;" id="postsList"><div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div></div>
+    <button class="fab" onclick="openNewPost()">✏️</button>
+  </div>
+
+  <!-- SELL -->
+  <div class="screen" id="screen-sell">
+    <div class="sell-hero"><h2>İlan Ver 🌸</h2><p>Kullanmadığın eşyaları bir anneye sat!</p></div>
+    <div style="padding:20px 20px 0;">
+      <div class="f-group">
+        <label class="f-label">📷 Fotoğraf Ekle (maks. 5)</label>
+        <div class="photo-grid" id="photoGrid"><div class="photo-add" onclick="document.getElementById('photoInput').click()"><span>📸</span><small>Ekle</small></div></div>
+        <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect(event)">
+        <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+      </div>
+      <div class="f-group"><label class="f-label">🏷️ Başlık</label><input class="f-input" placeholder="Örn: Mamas &amp; Papas Puset – Az Kullanılmış" id="listingTitle"></div>
+      <div class="f-group">
+        <label class="f-label">📂 Kategori</label>
+        <select class="f-select" id="listingCategory">
+          <option value="puset">Puset &amp; Bebek Arabası</option>
+          <option value="giysi">Giysi &amp; Aksesuar</option>
+          <option value="oyuncak">Oyuncak &amp; Eğitici</option>
+          <option value="karyola">Karyola &amp; Beşik</option>
+          <option value="mama">Mama Sandalyesi</option>
+          <option value="guvenlik">Güvenlik Ürünleri</option>
+          <option value="diger">Diğer</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label class="f-label">⭐ Ürün Durumu</label>
+        <div class="cond-grid">
+          <div class="cond-opt selected" onclick="selectCondition(this,'likeNew')"><div class="ce">✨</div><div class="cl">Sıfır Gibi</div><div class="cd">Hiç kullanılmadı</div></div>
+          <div class="cond-opt" onclick="selectCondition(this,'good')"><div class="ce">👍</div><div class="cl">İyi</div><div class="cd">Az kullanıldı</div></div>
+          <div class="cond-opt" onclick="selectCondition(this,'fair')"><div class="ce">🔄</div><div class="cl">Normal</div><div class="cd">Kullanım izi var</div></div>
+        </div>
+      </div>
+      <div class="f-group"><label class="f-label">💰 Fiyat (₺)</label><input class="f-input" type="number" placeholder="0" id="listingPrice"></div>
+      <div class="f-group"><label class="f-label">📝 Açıklama</label><textarea class="f-textarea" placeholder="Ürün hakkında detay ver..." id="listingDesc"></textarea></div>
+      <div class="f-group" style="margin-top:12px;"><label class="f-label">📍 Konum</label><input class="f-input" placeholder="İlçe, Şehir – örn: Kadıköy, İstanbul" id="listingCity"></div>
+      <div class="f-group"><label class="f-label">📱 WhatsApp No (isteğe bağlı)</label><input class="f-input" placeholder="5XX XXX XX XX" id="listingPhone" type="tel" maxlength="11"></div>
+      <div class="info-box">ℹ️ <strong>Kizcs ödeme ve kargo ile ilgilenmez.</strong> Alıcı ile iletişimi kendin kur. Güvenliğin için kamuya açık yerlerde buluş.</div>
+      <button class="btn btn-primary btn-full" onclick="publishListing()" id="publishBtn" style="font-size:16px;padding:16px;margin-bottom:24px;">🚀 İlanı Yayınla</button>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="screen" id="screen-profile">
+    <div class="profile-header">
+      <div class="profile-ava-big" id="profileAvaBig">A</div>
+      <div class="profile-name" id="profileNameBig">Anne</div>
+      <div class="profile-meta" id="profileEmailBig">kizcs.app</div>
+    </div>
+    <div class="profile-stats">
+      <div class="stat-item"><div class="stat-num" id="statListings">0</div><div class="stat-label">İlan</div></div>
+      <div class="stat-item"><div class="stat-num" id="statFollowers">0</div><div class="stat-label">Takipçi</div></div>
+      <div class="stat-item"><div class="stat-num" id="statFollowing">0</div><div class="stat-label">Takip</div></div>
+      <div class="stat-item"><div class="stat-num" id="statFavs">0</div><div class="stat-label">Favori</div></div>
+    </div>
+    <div class="menu-list" style="margin-top:20px;">
+      <button class="menu-item" onclick="showMyListings()"><div class="menu-icon" style="background:#FFD6E7;">📋</div><span class="menu-label">İlanlarım</span><span class="menu-arrow">›</span></button>
+      <button class="menu-item" onclick="showMyReviews()"><div class="menu-icon" style="background:#FFF3CD;">⭐</div><span class="menu-label">Değerlendirmelerim</span><span class="menu-arrow">›</span></button>
+      <button class="menu-item" onclick="showFollowers()"><div class="menu-icon" style="background:#C8F4F1;">👥</div><span class="menu-label">Takipçilerim</span><span class="menu-arrow">›</span></button>
+      <button class="menu-item" onclick="showMyFavorites()"><div class="menu-icon" style="background:#E8D5FF;">❤️</div><span class="menu-label">Favorilerim</span><span class="menu-arrow">›</span></button>
+      <button class="menu-item" onclick="openModal('modalReport')"><div class="menu-icon" style="background:#FFE0E0;">🚨</div><span class="menu-label">Şikayet Et</span><span class="menu-arrow">›</span></button>
+      <button class="menu-item" onclick="openModal('modalPrivacy')"><div class="menu-icon" style="background:#E8F4FD;">🔒</div><span class="menu-label">Gizlilik Politikası</span><span class="menu-arrow">›</span></button>
+      <button class="menu-item" onclick="openModal('modalKvkk')"><div class="menu-icon" style="background:#F0F8E8;">📋</div><span class="menu-label">KVKK Aydınlatma</span><span class="menu-arrow">›</span></button>
+      <button class="menu-item" onclick="openModal('modalTerms')"><div class="menu-icon" style="background:#FFF8E8;">⚖️</div><span class="menu-label">Kullanım Koşulları</span><span class="menu-arrow">›</span></button>
+      <button class="menu-item" onclick="signOutUser()"><div class="menu-icon" style="background:#F0F0F0;">🚪</div><span class="menu-label">Çıkış Yap</span><span class="menu-arrow">›</span></button>
+      <button class="menu-item" onclick="openModal('modalDeleteAccount')" style="margin-top:4px;"><div class="menu-icon" style="background:#FFE0E0;">🗑️</div><span class="menu-label" style="color:#E74C3C;">Hesabımı Sil</span><span class="menu-arrow" style="color:#E74C3C;">›</span></button>
+    </div>
+  </div>
+
+
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel">
+    <div class="admin-topbar">
+      <div><span class="logo">Kiz<span>cs</span></span><span class="admin-badge-top">ADMİN</span></div>
+      <button onclick="signOutUser()" style="background:rgba(255,255,255,.15);color:#fff;border:none;padding:8px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;">Çıkış</button>
+    </div>
+    <div class="a-stats">
+      <div class="a-stat"><div class="n" id="aUsers">-</div><div class="l">Kullanıcı</div></div>
+      <div class="a-stat"><div class="n" id="aListings">-</div><div class="l">İlan</div></div>
+      <div class="a-stat"><div class="n" id="aPosts">-</div><div class="l">Gönderi</div></div>
+      <div class="a-stat"><div class="n" id="aReports" style="color:#E74C3C;">-</div><div class="l">Şikayet</div></div>
+    </div>
+    <div class="a-tabs">
+      <button class="a-tab active" onclick="switchAdminTab('reports',this)">🚨 Şikayetler</button>
+      <button class="a-tab" onclick="switchAdminTab('listings',this)">📋 İlanlar</button>
+      <button class="a-tab" onclick="switchAdminTab('users',this)">👥 Kullanıcılar</button>
+      <button class="a-tab" onclick="switchAdminTab('posts',this)">💬 Gönderiler</button>
+    </div>
+    <div id="as-reports" class="a-section active"><div id="reportsContent"><div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div></div></div>
+    <div id="as-listings" class="a-section"><div id="listingsAdminContent"><div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div></div></div>
+    <div id="as-users" class="a-section"><div id="usersContent"><div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div></div></div>
+    <div id="as-posts" class="a-section"><div id="postsAdminContent"><div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div></div></div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('home')" id="nav-home"><span class="ni">🏠</span>Ana Sayfa</button>
+    <button class="nav-item" onclick="switchTab('community')" id="nav-community"><span class="ni">💬</span>Topluluk</button>
+    <button class="nav-item" onclick="switchTab('sell')" id="nav-sell"><span class="ni">➕</span>İlan Ver</button>
+    <button class="nav-item" onclick="switchTab('profile')" id="nav-profile"><span class="ni">👤</span>Profilim</button>
+    <button class="nav-item" id="nav-admin" style="display:none;" onclick="switchToAdmin()"><span class="ni">⚙️</span>Admin</button>
+  </nav>
+</div>
+
+<!-- IMAGE MODAL -->
+<div class="img-modal" id="imgModal" onclick="closeImgModal()"><button class="img-modal-close">✕</button><img id="imgModalSrc" src="" alt=""></div>
+
+<!-- LISTING DETAIL -->
+<div class="modal-overlay" id="modalDetail"><div class="modal"><div class="modal-handle" onclick="closeModal('modalDetail')"></div><div id="modalDetailContent"></div></div></div>
+
+<!-- NEW POST -->
+<div class="modal-overlay" id="modalNewPost">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modalNewPost')"></div>
+    <h3 class="modal-title">✍️ Paylaşım Yap</h3>
+    <div style="font-size:12px;font-weight:600;color:var(--gray);margin-bottom:8px;">GRUP SEÇ</div>
+    <div class="group-selector">
+      <div class="group-btn selected" onclick="selectGroup(this,'soru')">❓ Sorular</div>
+      <div class="group-btn" onclick="selectGroup(this,'tavsiye')">💡 Tavsiyeler</div>
+      <div class="group-btn" onclick="selectGroup(this,'deneyim')">❤️ Deneyimler</div>
+      <div class="group-btn" onclick="selectGroup(this,'takas')">♻️ Takas</div>
+      <div class="group-btn" onclick="selectGroup(this,'emzirme')">🍼 Emzirme</div>
+      <div class="group-btn" onclick="selectGroup(this,'saglik')">🏥 Sağlık</div>
+      <div class="group-btn kahvehane-btn" onclick="selectGroup(this,'kahvehane')">☕ Kahvehane</div>
+    </div>
+    <textarea class="post-textarea" id="newPostText" placeholder="Annelerle ne paylaşmak istiyorsun? 🌸"></textarea>
+    <div style="display:flex;align-items:center;gap:10px;margin:10px 0;">
+      <button class="toolbar-btn" onclick="document.getElementById('postImgInput').click()">🖼️</button>
+      <span style="font-size:12px;color:var(--gray);">Fotoğraf ekle (maks. 4)</span>
+    </div>
+    <input type="file" id="postImgInput" accept="image/*" multiple style="display:none" onchange="handlePostImages(event)">
+    <div class="photo-preview-row" id="postImgPreview"></div>
+    <button class="btn btn-primary btn-full" id="submitPostBtn" onclick="submitPost()">Paylaş 🚀</button>
+  </div>
+</div>
+
+<!-- POST OPTIONS -->
+<div class="modal-overlay" id="modalPostOptions">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modalPostOptions')"></div>
+    <div class="option-item" onclick="reportPostAction()"><span>🚨</span><span>Şikayet et</span></div>
+    <div class="option-item" onclick="sharePostLink()"><span>🔗</span><span>Bağlantıyı kopyala</span></div>
+    <div class="option-item" id="deletePostOption" style="display:none;" onclick="deleteCurrentPost()"><span>🗑️</span><span style="color:#E74C3C;">Gönderiyi sil</span></div>
+  </div>
+</div>
+
+<!-- USER PROFILE MODAL -->
+<div class="modal-overlay" id="modalUserProfile">
+  <div class="modal" style="padding:0 0 40px;">
+    <div class="user-profile-header" id="userProfileHeader">
+      <div class="modal-handle" onclick="closeModal('modalUserProfile')" style="background:rgba(255,255,255,.4);margin-bottom:12px;"></div>
+      <div class="user-ava-big" id="userAvaModal">A</div>
+      <div class="user-profile-name" id="userNameModal">Anne</div>
+      <div class="user-profile-meta" id="userMetaModal">Kizcs üyesi</div>
+    </div>
+    <div style="padding:0 20px;">
+      <div class="user-profile-stats">
+        <div class="stat-item"><div class="stat-num" id="userStatListings">0</div><div class="stat-label">İlan</div></div>
+        <div class="stat-item"><div class="stat-num" id="userStatFollowers">0</div><div class="stat-label">Takipçi</div></div>
+        <div class="stat-item"><div class="stat-num" id="userStatRating">-</div><div class="stat-label">Puan</div></div>
+      </div>
+      <button class="follow-btn not-following" id="followBtn" onclick="toggleFollow()">➕ Takip Et</button>
+      <button class="btn btn-full" style="background:var(--gray-light);color:var(--charcoal);border-radius:14px;margin-bottom:12px;" onclick="openReviewModal()">⭐ Değerlendir</button>
+      <div id="userReviewsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="modalReview">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modalReview')"></div>
+    <h3 class="modal-title">⭐ Değerlendir</h3>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:16px;" id="reviewTargetName">Bu kullanıcıyı değerlendir</p>
+    <div class="stars" id="starsRow">
+      <span class="star" onclick="setStar(1)">⭐</span>
+      <span class="star" onclick="setStar(2)">⭐</span>
+      <span class="star" onclick="setStar(3)">⭐</span>
+      <span class="star" onclick="setStar(4)">⭐</span>
+      <span class="star" onclick="setStar(5)">⭐</span>
+    </div>
+    <textarea class="f-textarea" id="reviewText" placeholder="Deneyimini anlat..." style="margin:16px 0;"></textarea>
+    <button class="btn btn-primary btn-full" onclick="submitReview()">Değerlendirmeyi Gönder</button>
+  </div>
+</div>
+
+<!-- REPORT -->
+<div class="modal-overlay" id="modalReport">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modalReport')"></div>
+    <h3 class="modal-title">🚨 Şikayet Et</h3>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:14px;">Şikayet sebebini seç:</p>
+    <div id="reportReasonsList">
+      <div class="option-item" onclick="selectReportReason(this,'Yanıltıcı ilan')"><span>🤥</span><span>Yanıltıcı / yanlış ilan</span></div>
+      <div class="option-item" onclick="selectReportReason(this,'Sahte kullanıcı')"><span>👤</span><span>Sahte kullanıcı</span></div>
+      <div class="option-item" onclick="selectReportReason(this,'Dolandırıcılık')"><span>🚫</span><span>Dolandırıcılık girişimi</span></div>
+      <div class="option-item" onclick="selectReportReason(this,'Uygunsuz içerik')"><span>⚠️</span><span>Uygunsuz içerik</span></div>
+      <div class="option-item" onclick="selectReportReason(this,'Diğer')"><span>📝</span><span>Diğer</span></div>
+    </div>
+    <div id="reportDetailSection" style="display:none;margin-top:4px;">
+      <div style="background:var(--rose-light);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--rose);font-weight:600;margin-bottom:12px;" id="selectedReasonLabel"></div>
+      <textarea class="f-textarea" id="reportDesc" placeholder="Detay ver (isteğe bağlı): Ne gördün, neden şüpheleniyorsun?" style="min-height:80px;margin-bottom:12px;"></textarea>
+      <div style="display:flex;gap:10px;">
+        <button onclick="backToReasons()" style="flex:1;padding:12px;border-radius:14px;background:var(--gray-light);color:var(--charcoal);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;">← Geri</button>
+        <button onclick="submitReport()" style="flex:2;padding:12px;border-radius:14px;background:var(--rose);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;box-shadow:0 4px 16px rgba(255,107,157,.3);">Şikayet Gönder 🚨</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ŞIFREMI UNUTTUM MODAL -->
+<div class="modal-overlay" id="modalForgot">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modalForgot')"></div>
+    <h3 class="modal-title">🔑 Şifremi Unuttum</h3>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.5;">E-posta adresini gir, şifre sıfırlama bağlantısı gönderelim.</p>
+    <div id="forgotError" style="background:#FFF0F0;border:1px solid #FFB3B3;border-radius:10px;padding:10px 14px;font-size:13px;color:#E74C3C;margin-bottom:12px;display:none;"></div>
+    <input class="f-input" type="email" id="forgotEmail" placeholder="E-posta adresin">
+    <button onclick="sendReset()" id="resetBtn" style="width:100%;padding:13px;border-radius:14px;background:var(--rose);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;box-shadow:0 4px 16px rgba(255,107,157,.3);">Sıfırlama E-postası Gönder</button>
+    <div id="resetSuccess" style="display:none;background:#D4EDDA;border-radius:10px;padding:14px;font-size:13px;color:#155724;margin-top:12px;text-align:center;line-height:1.5;">
+      ✅ E-posta gönderildi! Gelen kutunu kontrol et.<br>Spam klasörüne de bakabilirsin.
+    </div>
+  </div>
+</div>
+
+<!-- MY LISTINGS -->
+<div class="modal-overlay" id="modalMyListings"><div class="modal"><div class="modal-handle" onclick="closeModal('modalMyListings')"></div><h3 class="modal-title">📋 İlanlarım</h3><div id="myListingsContent"></div></div></div>
+<div class="modal-overlay" id="modalMyFavorites"><div class="modal"><div class="modal-handle" onclick="closeModal('modalMyFavorites')"></div><h3 class="modal-title">❤️ Favorilerim</h3><div id="myFavoritesContent"></div></div></div>
+
+<!-- MY REVIEWS -->
+<div class="modal-overlay" id="modalMyReviews"><div class="modal"><div class="modal-handle" onclick="closeModal('modalMyReviews')"></div><h3 class="modal-title">⭐ Değerlendirmelerim</h3><div id="myReviewsContent"></div></div></div>
+
+<!-- FOLLOWERS -->
+<div class="modal-overlay" id="modalFollowers"><div class="modal"><div class="modal-handle" onclick="closeModal('modalFollowers')"></div><h3 class="modal-title">👥 Takipçilerim</h3><div id="followersContent"></div></div></div>
+
+
+<!-- HESAP SİL MODAL -->
+<div class="modal-overlay" id="modalDeleteAccount">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modalDeleteAccount')"></div>
+    <h3 class="modal-title" style="color:#E74C3C;">🗑️ Hesabı Sil</h3>
+    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;line-height:1.6;">Hesabınızı sildiğinizde tüm ilanlarınız, gönderileriniz ve verileriniz kalıcı olarak silinir. Bu işlem geri alınamaz.</p>
+    <div style="background:#FFF0F0;border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;font-size:13px;color:#E74C3C;line-height:1.5;">
+      ⚠️ Devam etmek için şifrenizi girin:
+    </div>
+    <input class="f-input" type="password" id="deletePassword" placeholder="Şifrenizi girin">
+    <button class="btn btn-full" onclick="deleteAccount()" style="background:#E74C3C;color:#fff;border-radius:14px;padding:14px;font-size:15px;font-weight:600;border:none;cursor:pointer;margin-bottom:10px;">Hesabımı Kalıcı Olarak Sil</button>
+    <button class="btn btn-full" onclick="closeModal('modalDeleteAccount')" style="background:var(--gray-light);color:var(--charcoal);border-radius:14px;padding:14px;font-size:15px;font-weight:600;border:none;cursor:pointer;">Vazgeç</button>
+  </div>
+</div>
+
+<!-- GİZLİLİK POLİTİKASI -->
+<div class="modal-overlay" id="modalPrivacy">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modalPrivacy')"></div>
+    <h3 class="modal-title">🔒 Gizlilik Politikası</h3>
+    <div style="font-size:13px;line-height:1.7;color:#444;">
+      <p style="margin-bottom:12px;"><strong>Son Güncelleme:</strong> 2024</p>
+      <p style="margin-bottom:16px;">Kizcs olarak gizliliğinize önem veriyoruz. Bu politika, platformumuzu kullanırken verilerinizi nasıl topladığımızı ve kullandığımızı açıklar.</p>
+      <p style="font-weight:700;margin-bottom:6px;">Topladığımız Veriler</p>
+      <p style="margin-bottom:12px;">Ad, e-posta adresi, paylaştığınız ilan ve gönderi içerikleri. Ödeme bilgisi toplamıyoruz.</p>
+      <p style="font-weight:700;margin-bottom:6px;">Verileri Nasıl Kullanıyoruz</p>
+      <p style="margin-bottom:12px;">Verilerinizi yalnızca platformun çalışması için kullanıyoruz. Üçüncü taraflarla satmıyoruz.</p>
+      <p style="font-weight:700;margin-bottom:6px;">Veri Güvenliği</p>
+      <p style="margin-bottom:12px;">Verileriniz Google Firebase altyapısında şifreli olarak saklanır.</p>
+      <p style="font-weight:700;margin-bottom:6px;">Haklarınız</p>
+      <p style="margin-bottom:12px;">Verilerinizi görme, düzeltme veya silme hakkına sahipsiniz. Hesabınızı silerek tüm verilerinizi kaldırabilirsiniz.</p>
+      <p style="font-weight:700;margin-bottom:6px;">İletişim</p>
+      <p>Sorularınız için: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a1c8cfc7cee1cac8dbc2d28fc2cecc">[email&#160;protected]</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- KVKK AYDINLATMA -->
+<div class="modal-overlay" id="modalKvkk">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modalKvkk')"></div>
+    <h3 class="modal-title">📋 KVKK Aydınlatma Metni</h3>
+    <div style="font-size:13px;line-height:1.7;color:#444;">
+      <p style="margin-bottom:12px;"><strong>6698 Sayılı Kişisel Verilerin Korunması Kanunu Kapsamında Aydınlatma Metni</strong></p>
+      <p style="font-weight:700;margin-bottom:6px;">Veri Sorumlusu</p>
+      <p style="margin-bottom:12px;">Kizcs platformu veri sorumlusu sıfatıyla hareket etmektedir.</p>
+      <p style="font-weight:700;margin-bottom:6px;">İşlenen Kişisel Veriler</p>
+      <p style="margin-bottom:12px;">Ad-soyad, e-posta adresi, paylaşılan içerikler (ilan, gönderi, yorum).</p>
+      <p style="font-weight:700;margin-bottom:6px;">Kişisel Verilerin İşlenme Amacı</p>
+      <p style="margin-bottom:12px;">Platform hizmetinin sunulması, kullanıcı hesabının yönetilmesi, güvenliğin sağlanması.</p>
+      <p style="font-weight:700;margin-bottom:6px;">Kişisel Verilerin Aktarımı</p>
+      <p style="margin-bottom:12px;">Kişisel verileriniz; yasal zorunluluklar dışında üçüncü kişilerle paylaşılmamaktadır.</p>
+      <p style="font-weight:700;margin-bottom:6px;">Haklarınız (KVKK Madde 11)</p>
+      <p style="margin-bottom:6px;">• Kişisel verilerinizin işlenip işlenmediğini öğrenme</p>
+      <p style="margin-bottom:6px;">• İşlenmişse buna ilişkin bilgi talep etme</p>
+      <p style="margin-bottom:6px;">• Verilerin silinmesini veya yok edilmesini isteme</p>
+      <p style="margin-bottom:12px;">• Zararın giderilmesini talep etme</p>
+      <p style="font-weight:700;margin-bottom:6px;">Başvuru</p>
+      <p>Haklarınızı kullanmak için: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c5acaba3aa85aeacbfa6b6eba6aaa8">[email&#160;protected]</a> adresine başvurabilirsiniz.</p>
+    </div>
+  </div>
+</div>
+
+<!-- KULLANIM KOŞULLARI -->
+<div class="modal-overlay" id="modalTerms">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modalTerms')"></div>
+    <h3 class="modal-title">⚖️ Kullanım Koşulları</h3>
+    <div style="font-size:13px;line-height:1.7;color:#444;">
+      <p style="margin-bottom:16px;">Kizcs platformunu kullanarak aşağıdaki koşulları kabul etmiş sayılırsınız.</p>
+      <p style="font-weight:700;margin-bottom:6px;">Platform Hakkında</p>
+      <p style="margin-bottom:12px;">Kizcs, ikinci el anne-bebek ürünleri için bir ilan ve topluluk platformudur. Alıcı ve satıcıları bir araya getirir.</p>
+      <p style="font-weight:700;margin-bottom:6px;">Kizcs'in Sorumluluğu Dışındakiler</p>
+      <p style="margin-bottom:6px;">• Ödeme ve kargo işlemleri tamamen alıcı ve satıcı arasındadır.</p>
+      <p style="margin-bottom:6px;">• Kizcs herhangi bir alışverişte aracı veya taraf değildir.</p>
+      <p style="margin-bottom:6px;">• Ürünün doğruluğu, kalitesi veya güvenliği konusunda sorumluluk almaz.</p>
+      <p style="margin-bottom:12px;">• Kullanıcılar arasındaki anlaşmazlıklara müdahil olmaz.</p>
+      <p style="font-weight:700;margin-bottom:6px;">Kullanıcı Yükümlülükleri</p>
+      <p style="margin-bottom:6px;">• Gerçek ve doğru bilgi paylaşmak</p>
+      <p style="margin-bottom:6px;">• Yasadışı veya yanıltıcı ilan vermemek</p>
+      <p style="margin-bottom:6px;">• Diğer kullanıcılara saygılı davranmak</p>
+      <p style="margin-bottom:12px;">• Topluluk kurallarına uymak</p>
+      <p style="font-weight:700;margin-bottom:6px;">Güvenli Alışveriş Önerileri</p>
+      <p style="margin-bottom:6px;">• Buluşmalarınızı kamuya açık yerlerde yapın</p>
+      <p style="margin-bottom:6px;">• Ürünü teslim almadan ödeme yapmayın</p>
+      <p style="margin-bottom:12px;">• Şüpheli ilanları mutlaka bildirin</p>
+      <p style="font-weight:700;margin-bottom:6px;">Hesap Kapatma</p>
+      <p>Kurallara aykırı davranan hesaplar uyarı yapılmaksızın kapatılabilir.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,updateProfile,onAuthStateChanged,signOut,EmailAuthProvider,reauthenticateWithCredential,deleteUser,sendPasswordResetEmail}from"https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import{getFirestore,collection,addDoc,getDocs,getDoc,doc,setDoc,updateDoc,deleteDoc,query,orderBy,limit,where,serverTimestamp,increment,arrayUnion,arrayRemove}from"https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+const CLOUD='dxnxfkfsd',PRESET='kizcs_upload';
+const fbCfg={apiKey:"AIzaSyB3KBDys7qKRHZJNt276t5nQW9FMruNRx8",authDomain:"kizcs-e71e3.firebaseapp.com",projectId:"kizcs-e71e3",storageBucket:"kizcs-e71e3.firebasestorage.app",messagingSenderId:"366021617677",appId:"1:366021617677:web:5f4b043afd6150af538d44"};
+const app=initializeApp(fbCfg),auth=getAuth(app),db=getFirestore(app);
+
+let cUser=null,authMode='login',selCond='likeNew',selPhotoFiles=[],postImgFiles=[],selPostGroup='soru',curGroup='all',curPostId=null,allListings=[],allPosts=[],selStar=0,curTargetUserId=null,curTargetUserName='';
+
+// CLOUDINARY
+async function uploadOne(file,onProg){
+  const fd=new FormData();fd.append('file',file);fd.append('upload_preset',PRESET);
+  return new Promise((res,rej)=>{
+    const xhr=new XMLHttpRequest();
+    xhr.open('POST',`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`);
+    xhr.upload.onprogress=e=>{if(onProg&&e.lengthComputable)onProg(e.loaded/e.total);};
+    xhr.onload=()=>{try{res(JSON.parse(xhr.responseText).secure_url);}catch(e){rej(e);}};
+    xhr.onerror=()=>rej(new Error('Yükleme hatası'));
+    xhr.send(fd);
+  });
+}
+async function uploadMany(files,barId,progEl){
+  if(!files.length)return[];
+  if(progEl)progEl.style.display='block';
+  const urls=[];
+  for(let i=0;i<files.length;i++){
+    const url=await uploadOne(files[i],p=>{if(barId)document.getElementById(barId).style.width=((i+p)/files.length*100)+'%';});
+    urls.push(url);
+  }
+  if(progEl){setTimeout(()=>{progEl.style.display='none';document.getElementById(barId).style.width='0%';},500);}
+  return urls;
+}
+
+// AUTH
+onAuthStateChanged(auth,async user=>{
+  const lo=document.getElementById('loadingOverlay');lo.style.opacity='0';lo.style.transition='opacity 0.2s';setTimeout(()=>lo.style.display='none',200);
+  if(user){cUser=user;document.getElementById('authScreen').classList.remove('active');document.getElementById('appShell').classList.add('active');updateUI(user);ensureUser(user);// Paralel yükle - await kaldırdık
+loadListings();setTimeout(()=>{loadPosts();loadMyStats();loadNotifCount();},100);
+    // Admin kontrolü
+    if(isAdmin(user)){document.getElementById('nav-admin').style.display='flex';}
+  }
+  else{cUser=null;document.getElementById('authScreen').classList.add('active');document.getElementById('appShell').classList.remove('active');}
+});
+
+async function ensureUser(u){
+  const r=doc(db,'users',u.uid);const s=await getDoc(r);
+  if(!s.exists())await setDoc(r,{name:u.displayName||'Anne',email:u.email,createdAt:serverTimestamp(),listingCount:0,postCount:0,followers:[],following:[],ratingSum:0,ratingCount:0});
+}
+
+function gi(n){return(n||'A').charAt(0).toUpperCase();}
+
+async function loadNotifCount(){
+  if(!cUser)return;
+  try{
+    const snap=await getDocs(query(collection(db,'notifications'),where('toUserId','==',cUser.uid),limit(20)));const unread=snap.docs.filter(d=>d.data().read===false);
+    const count=unread.length;
+    const badge=document.getElementById('notifBadge');
+    if(count>0){badge.textContent=count>9?'9+':count;badge.style.display='flex';}
+    else{badge.style.display='none';}
+  }catch(e){}
+}
+
+function updateUI(u){
+  const n=u.displayName||'Anne';
+  document.getElementById('heroGreeting').textContent=`Merhaba, ${n.split(' ')[0]}! 👋`;
+  document.getElementById('headerAvatar').textContent=gi(n);
+  document.getElementById('profileAvaBig').textContent=gi(n);
+  document.getElementById('profileNameBig').textContent=n;
+  document.getElementById('profileEmailBig').textContent=u.email;
+}
+
+async function loadMyStats(){
+  if(!cUser)return;
+  try{
+    const uDoc=await getDoc(doc(db,'users',cUser.uid));
+    if(!uDoc.exists())return;
+    const d=uDoc.data();
+    document.getElementById('statListings').textContent=d.listingCount||0;
+    document.getElementById('statFollowers').textContent=(d.followers||[]).length;
+    document.getElementById('statFollowing').textContent=(d.following||[]).length;
+    const rating=d.ratingCount>0?((d.ratingSum||0)/d.ratingCount).toFixed(1):'-';
+    document.getElementById('statRating').textContent=rating;
+  }catch(e){}
+}
+
+window.switchAuthTab=mode=>{authMode=mode;document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&mode==='login')||(i===1&&mode==='register')));document.getElementById('authName').style.display=mode==='register'?'block':'none';document.getElementById('authBtn').textContent=mode==='login'?'Giriş Yap':'Kayıt Ol';document.getElementById('authError').classList.remove('show');};
+
+window.handleAuth=async()=>{
+  const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value,name=document.getElementById('authName').value.trim(),btn=document.getElementById('authBtn');
+  if(!email||!password){showAuthError('E-posta ve şifre zorunlu!');return;}
+  if(authMode==='register'&&!name){showAuthError('Adını gir!');return;}
+  if(password.length<6){showAuthError('Şifre en az 6 karakter!');return;}
+  btn.disabled=true;btn.textContent=authMode==='login'?'Giriş yapılıyor...':'Kayıt olunuyor...';
+  document.getElementById('authError').classList.remove('show');
+  try{if(authMode==='register'){const c=await createUserWithEmailAndPassword(auth,email,password);await updateProfile(c.user,{displayName:name});}else await signInWithEmailAndPassword(auth,email,password);}
+  catch(e){const m={'auth/email-already-in-use':'Bu e-posta zaten kayıtlı!','auth/user-not-found':'Hesap bulunamadı.','auth/wrong-password':'Şifre hatalı!','auth/invalid-email':'Geçersiz e-posta.','auth/invalid-credential':'E-posta veya şifre hatalı.','auth/too-many-requests':'Çok fazla deneme.'};showAuthError(m[e.code]||e.message);btn.disabled=false;btn.textContent=authMode==='login'?'Giriş Yap':'Kayıt Ol';}
+};
+function showAuthError(msg){const el=document.getElementById('authError');el.textContent='⚠️ '+msg;el.classList.add('show');}
+document.getElementById('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')window.handleAuth();});
+
+// ===== ADMIN =====
+const ADMIN_EMAIL = 'kayassumeyye061@gmail.com';
+
+function isAdmin(user){ return user && user.email === ADMIN_EMAIL; }
+
+window.switchToAdmin = () => {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('adminPanel').style.display='block';
+  document.getElementById('nav-admin').classList.add('active');
+  loadAdminAll();
+};
+
+window.switchFromAdmin = () => {
+  document.getElementById('adminPanel').style.display='none';
+  switchTab('home');
+};
+
+window.switchAdminTab = (tab, el) => {
+  document.querySelectorAll('.a-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.a-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('as-'+tab).classList.add('active');
+};
+
+async function loadAdminAll(){
+  loadAdminStats();
+  loadAdminReports();
+  loadAdminListings();
+  loadAdminUsers();
+  loadAdminPosts();
+}
+
+async function loadAdminStats(){
+  try{
+    const [uS,lS,pS,rS] = await Promise.all([
+      getDocs(query(collection(db,'users'),limit(1000))),
+      getDocs(query(collection(db,'listings'),limit(1000))),
+      getDocs(query(collection(db,'posts'),limit(1000))),
+      getDocs(query(collection(db,'reports'),limit(1000))),
+    ]);
+    document.getElementById('aUsers').textContent=uS.size;
+    document.getElementById('aListings').textContent=lS.size;
+    document.getElementById('aPosts').textContent=pS.size;
+    document.getElementById('aReports').textContent=rS.size;
+  }catch(e){}
+}
+
+async function loadAdminReports(){
+  const el=document.getElementById('reportsContent');
+  el.innerHTML='<div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div>';
+  try{
+    const snap=await getDocs(query(collection(db,'reports'),orderBy('createdAt','desc'),limit(100)));
+    const reports=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!reports.length){el.innerHTML='<div class="empty"><span class="ee">🎉</span><h3>Şikayet yok!</h3></div>';return;}
+    el.innerHTML=reports.map(r=>`
+      <div class="a-card">
+        <div class="a-row">
+          <div class="a-row-title">⚠️ ${r.reason||'Belirtilmemiş'}</div>
+          <div class="a-row-meta">Tür: ${r.type==='post'?'💬 Gönderi':'🏷️ Genel'} · ${timeAgo(r.createdAt)}</div>
+          ${r.targetId?`<div class="a-row-meta" style="margin-top:2px;">Hedef ID: ${r.targetId}</div>`:''}
+          <div style="margin-top:6px;"><span class="${r.status==='resolved'?'badge-resolved':'badge-pending'}">${r.status==='resolved'?'✓ Çözüldü':'⏳ Bekliyor'}</span></div>
+          <div class="a-row-actions">
+            ${r.status!=='resolved'?`<button class="abtn abtn-success" onclick="adminResolveReport('${r.id}')">✓ Çözüldü</button>`:''}
+            ${r.targetId&&r.type==='post'?`<button class="abtn abtn-danger" onclick="adminDeleteItem('post','${r.targetId}')">🗑️ Gönderiyi Sil</button>`:''}
+            ${r.targetId&&r.type==='listing'?`<button class="abtn abtn-danger" onclick="adminDeleteItem('listing','${r.targetId}')">🗑️ İlanı Sil</button>`:''}
+            <button class="abtn abtn-danger" onclick="adminDeleteItem('report','${r.id}')">✕ Şikayeti Sil</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML=`<div class="empty"><span class="ee">😔</span><p>${e.message}</p></div>`;}
+}
+
+window.adminResolveReport=async(id)=>{
+  try{await updateDoc(doc(db,'reports',id),{status:'resolved',resolvedAt:serverTimestamp()});showToast('✓ Çözüldü işaretlendi','success');loadAdminReports();}
+  catch(e){showToast('Hata: '+e.message,'error');}
+};
+
+async function loadAdminListings(){
+  const el=document.getElementById('listingsAdminContent');
+  el.innerHTML='<div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div>';
+  try{
+    const snap=await getDocs(query(collection(db,'listings'),orderBy('createdAt','desc'),limit(100)));
+    const items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!items.length){el.innerHTML='<div class="empty"><span class="ee">📋</span><p>İlan yok</p></div>';return;}
+    el.innerHTML=items.map(l=>`
+      <div class="a-card">
+        <div class="a-row">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#FFD6E7,#C8F4F1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;">
+              ${l.photos&&l.photos[0]?`<img src="${l.photos[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">`:'📦'}
+            </div>
+            <div style="flex:1;">
+              <div class="a-row-title">${l.title||'Başlıksız'}</div>
+              <div class="a-row-meta">${l.sellerName||'-'} · ${Number(l.price||0).toLocaleString('tr-TR')}₺ · ${timeAgo(l.createdAt)}</div>
+            </div>
+          </div>
+          <div class="a-row-actions">
+            <button class="abtn abtn-danger" onclick="adminDeleteItem('listings','${l.id}')">🗑️ İlanı Sil</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML=`<div class="empty"><span class="ee">😔</span><p>${e.message}</p></div>`;}
+}
+
+async function loadAdminUsers(){
+  const el=document.getElementById('usersContent');
+  el.innerHTML='<div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div>';
+  try{
+    const snap=await getDocs(query(collection(db,'users'),limit(200)));
+    const items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!items.length){el.innerHTML='<div class="empty"><span class="ee">👥</span><p>Kullanıcı yok</p></div>';return;}
+    el.innerHTML=items.map(u=>`
+      <div class="a-card">
+        <div class="a-row">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--rose);">${(u.name||'A').charAt(0)}</div>
+            <div style="flex:1;">
+              <div class="a-row-title">${u.name||'İsimsiz'} <span class="${u.banned?'badge-banned':'badge-active'}">${u.banned?'Banlı':'Aktif'}</span></div>
+              <div class="a-row-meta">${u.email||'-'} · ${u.listingCount||0} ilan · Üye: ${timeAgo(u.createdAt)}</div>
+            </div>
+          </div>
+          <div class="a-row-actions">
+            ${u.banned
+              ?`<button class="abtn abtn-success" onclick="adminToggleBan('${u.id}',false)">✓ Ban Kaldır</button>`
+              :`<button class="abtn abtn-warn" onclick="adminToggleBan('${u.id}',true)">🚫 Banla</button>`
+            }
+            <button class="abtn abtn-danger" onclick="adminDeleteItem('users','${u.id}')">🗑️ Sil</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML=`<div class="empty"><span class="ee">😔</span><p>${e.message}</p></div>`;}
+}
+
+window.adminToggleBan=async(uid,ban)=>{
+  try{
+    await updateDoc(doc(db,'users',uid),{banned:ban,bannedAt:ban?serverTimestamp():null});
+    showToast(ban?'🚫 Kullanıcı banlandı!':'✓ Ban kaldırıldı','success');
+    loadAdminUsers();
+  }catch(e){showToast('Hata: '+e.message,'error');}
+};
+
+async function loadAdminPosts(){
+  const el=document.getElementById('postsAdminContent');
+  el.innerHTML='<div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div>';
+  try{
+    const snap=await getDocs(query(collection(db,'posts'),orderBy('createdAt','desc'),limit(100)));
+    const items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!items.length){el.innerHTML='<div class="empty"><span class="ee">💬</span><p>Gönderi yok</p></div>';return;}
+    const gL={soru:'❓',tavsiye:'💡',deneyim:'❤️',takas:'♻️',emzirme:'🍼',saglik:'🏥',kahvehane:'☕'};
+    el.innerHTML=items.map(p=>`
+      <div class="a-card">
+        <div class="a-row">
+          <div class="a-row-title">${gL[p.group]||''} ${p.authorName||'Anne'}</div>
+          <div class="a-row-meta">${(p.text||'(fotoğraf)').substring(0,80)}${(p.text||'').length>80?'...':''}</div>
+          <div class="a-row-meta">❤️ ${p.likes||0} · 💬 ${p.commentCount||0} · ${timeAgo(p.createdAt)}</div>
+          <div class="a-row-actions">
+            <button class="abtn abtn-danger" onclick="adminDeleteItem('posts','${p.id}')">🗑️ Gönderiyi Sil</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML=`<div class="empty"><span class="ee">😔</span><p>${e.message}</p></div>`;}
+}
+
+window.adminDeleteItem=async(colName,id)=>{
+  if(!confirm('Silmek istediğine emin misin?'))return;
+  try{
+    await deleteDoc(doc(db,colName,id));
+    showToast('🗑️ Silindi!','success');
+    loadAdminAll();
+    loadAdminStats();
+  }catch(e){showToast('Hata: '+e.message,'error');}
+};
+
+window.signOutUser=async()=>{await signOut(auth);showToast('Çıkış yapıldı.');};
+
+window.deleteAccount=async()=>{
+  if(!cUser){showToast('Oturum bulunamadı!','error');return;}
+  const password=document.getElementById('deletePassword').value;
+  if(!password){showToast('Şifrenizi girin!','error');return;}
+  try{
+    // Önce yeniden kimlik doğrula
+    const credential=EmailAuthProvider.credential(cUser.email,password);
+    await reauthenticateWithCredential(cUser,credential);
+    const uid=cUser.uid;
+    // Firestore verilerini sil
+    try{await deleteDoc(doc(db,'users',uid));}catch(e){}
+    // İlanları sil
+    try{const lSnap=await getDocs(query(collection(db,'listings'),where('sellerId','==',uid)));for(const d of lSnap.docs)await deleteDoc(d.ref);}catch(e){}
+    // Gönderileri sil  
+    try{const pSnap=await getDocs(query(collection(db,'posts'),where('authorId','==',uid)));for(const d of pSnap.docs)await deleteDoc(d.ref);}catch(e){}
+    // Firebase Auth hesabını sil
+    await deleteUser(cUser);
+    showToast('Hesabınız silindi.','success');
+    closeModal('modalDeleteAccount');
+  }catch(e){
+    const msgs={'auth/wrong-password':'Şifre hatalı!','auth/invalid-credential':'Şifre hatalı!'};
+    showToast(msgs[e.code]||'Hata: '+e.message,'error');
+  }
+};
+
+// LISTINGS - INDEX GEREKTİRMEYEN SORGU
+const cLabels={likeNew:'Sıfır Gibi',good:'İyi',fair:'Normal'};
+const cEmojis={puset:'🛒',giysi:'👕',oyuncak:'🧸',karyola:'🛏️',mama:'🍼',guvenlik:'🛡️',diger:'📦'};
+
+async function loadListings(cat='all'){
+  const g=document.getElementById('listingsGrid');
+  g.innerHTML=`<div class="empty" style="grid-column:span 2"><span class="ee">⏳</span><p>Yükleniyor...</p></div>`;
+  try{
+    // Index gerektirmeyen basit sorgu - sadece createdAt ile sırala
+    const q=query(collection(db,'listings'),orderBy('createdAt','desc'),limit(40));
+    const snap=await getDocs(q);
+    allListings=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Kategori filtresini client side yap
+    const filtered=cat==='all'?allListings:allListings.filter(l=>l.category===cat);
+    renderListings(filtered);
+  }catch(e){g.innerHTML=`<div class="empty" style="grid-column:span 2"><span class="ee">😔</span><p>${e.message}</p></div>`;}
+}
+
+function renderListings(data){
+  const g=document.getElementById('listingsGrid');
+  if(!data.length){g.innerHTML=`<div class="empty" style="grid-column:span 2"><span class="ee">🌸</span><h3>İlan yok</h3><p>Bu kategoride henüz ilan yok!</p></div>`;return;}
+  g.innerHTML=data.map(l=>`<div class="listing-card" onclick="openListing('${l.id}')"><div class="listing-img">${l.photos&&l.photos[0]?`<img src="${l.photos[0]}" loading="lazy">`:cEmojis[l.category]||'📦'}</div><div class="listing-badge">${cLabels[l.condition]||'İyi'}</div><button class="listing-fav" onclick="toggleFav(event,this,'"+l.id+"')">🤍</button><div class="listing-info"><div class="listing-title">${l.title}</div><div class="listing-price">${Number(l.price).toLocaleString('tr-TR')}₺</div><div class="listing-loc">📍 ${l.city||'Türkiye'}</div><span class="listing-cond cond-${l.condition}">${cLabels[l.condition]||'İyi'}</span></div></div>`).join('');
+}
+
+window.openListing=id=>{
+  const l=allListings.find(x=>x.id===id);if(!l)return;
+  const ph=l.photos&&l.photos[0]?`<img src="${l.photos[0]}" style="width:100%;height:100%;object-fit:cover;">`:cEmojis[l.category]||'📦';
+  // Satıcı bilgilerini global tut
+  window._curSellerId = l.sellerId||'';
+  window._curSellerName = l.sellerName||'Anne';
+  window._curSellerPhone = l.sellerPhone||'';
+  const sellerWaLink = l.sellerPhone ? `https://wa.me/90${l.sellerPhone.replace(/[^0-9]/g,'')}?text=Kizcs%20-%20${encodeURIComponent(l.title)}%20hakkında%20bilgi%20almak%20istiyorum.` : '';
+  document.getElementById('modalDetailContent').innerHTML=`<div class="detail-img">${ph}</div><div style="padding-top:16px;"><div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-family:'Fraunces',serif;font-size:32px;font-weight:900;color:var(--rose);">${Number(l.price).toLocaleString('tr-TR')}₺</div><span style="background:var(--rose-light);color:var(--rose);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;">${cLabels[l.condition]||'İyi'}</span></div><div style="font-size:20px;font-weight:700;margin:8px 0;">${l.title}</div><div style="color:var(--gray);font-size:13px;margin-bottom:12px;">📍 ${l.city||'Türkiye'}</div>
+  <div style="background:var(--gray-light);border-radius:var(--radius);padding:14px;display:flex;align-items:center;gap:12px;margin:16px 0;" id="sellerCardBtn">
+    <div class="p-ava">${gi(l.sellerName)}</div>
+    <div style="flex:1;"><div style="font-weight:600;font-size:14px;">${l.sellerName||'Anne'}</div><div style="font-size:12px;color:var(--rose);font-weight:600;">Profili görüntüle →</div></div>
+  </div>
+  <p style="font-size:14px;line-height:1.6;color:#444;margin-bottom:16px;">${l.description||''}</p>
+  <div class="info-box" style="margin-bottom:16px;">⚠️ <strong>Ödeme ve kargo</strong> alıcı ile satıcı arasında düzenlenir.</div>
+  <div style="display:flex;gap:10px;margin-bottom:10px;">
+    <button class="btn btn-outline" style="flex:1;" id="emailBtn">✉️ E-posta</button>
+    <button class="btn" style="flex:2;background:#25D366;color:#fff;" id="waBtn">💬 WhatsApp</button>
+  </div>
+  <div style="text-align:center;"><button onclick="openModal('modalReport')" style="background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;text-decoration:underline;">🚨 Şikayet et</button></div>
+  </div>`;
+  // Event listener'ları ekle
+  document.getElementById('sellerCardBtn').onclick=()=>openUserProfile(l.sellerId,l.sellerName);
+  document.getElementById('emailBtn').onclick=()=>window.open('mailto:'+l.sellerEmail+'?subject=Kizcs - '+l.title);
+  document.getElementById('waBtn').onclick=()=>{
+    if(l.sellerPhone){window.open('https://wa.me/90'+l.sellerPhone.replace(/[^0-9]/g,'')+'?text=Merhaba! Kizcs'te "'+l.title+'" ilanınız hakkında bilgi almak istiyorum.');}
+    else{showToast('Satıcı WhatsApp numarası eklememiş','error');}
+  };
+  openModal('modalDetail');
+};
+
+// PHOTO
+window.handlePhotoSelect=e=>{selPhotoFiles=Array.from(e.target.files).slice(0,5);renderPhotoGrid();};
+function renderPhotoGrid(){
+  const g=document.getElementById('photoGrid');
+  g.innerHTML=selPhotoFiles.map((f,i)=>`<div class="photo-thumb-wrap"><img src="${URL.createObjectURL(f)}"><button class="photo-remove" onclick="removePhoto(${i})">✕</button></div>`).join('');
+  if(selPhotoFiles.length<5)g.innerHTML+=`<div class="photo-add" onclick="document.getElementById('photoInput').click()"><span>📸</span><small>Ekle</small></div>`;
+}
+window.removePhoto=idx=>{selPhotoFiles.splice(idx,1);renderPhotoGrid();};
+
+window.publishListing=async()=>{
+  if(!cUser){showToast('Önce giriş yap!','error');return;}
+  const title=document.getElementById('listingTitle').value.trim(),price=document.getElementById('listingPrice').value,city=document.getElementById('listingCity').value.trim(),desc=document.getElementById('listingDesc').value.trim(),category=document.getElementById('listingCategory').value,phone=(document.getElementById('listingPhone')?document.getElementById('listingPhone').value.trim():'');
+  if(!title||!price||!city){showToast('⚠️ Başlık, fiyat ve konum zorunlu!','error');return;}
+  const btn=document.getElementById('publishBtn');btn.disabled=true;btn.textContent='⏳ Yükleniyor...';
+  try{
+    const progEl=document.getElementById('uploadProgress');
+    const photos=await uploadMany(selPhotoFiles,'uploadProgressBar',progEl);
+    await addDoc(collection(db,'listings'),{title,price:Number(price),city,description:desc,category,condition:selCond,photos,sellerPhone:phone,sellerId:cUser.uid,sellerName:cUser.displayName||'Anne',sellerEmail:cUser.email,isActive:true,createdAt:serverTimestamp()});
+    await updateDoc(doc(db,'users',cUser.uid),{listingCount:increment(1)});
+    showToast('✅ İlanın yayınlandı!','success');
+    document.getElementById('listingTitle').value='';document.getElementById('listingPrice').value='';document.getElementById('listingCity').value='';document.getElementById('listingDesc').value='';selPhotoFiles=[];renderPhotoGrid();
+    setTimeout(()=>{switchTab('home');loadListings();},1200);
+  }catch(e){showToast('Hata: '+e.message,'error');}
+  finally{btn.disabled=false;btn.textContent='🚀 İlanı Yayınla';}
+};
+
+// POSTS - INDEX GEREKTİRMEYEN SORGU
+const gLabels={soru:'❓ Soru',tavsiye:'💡 Tavsiye',deneyim:'❤️ Deneyim',takas:'♻️ Takas',emzirme:'🍼 Emzirme',saglik:'🏥 Sağlık',kahvehane:'☕ Kahvehane'};
+
+async function loadPosts(group='all'){
+  document.getElementById('postsList').innerHTML=`<div class="empty"><span class="ee">⏳</span><p>Yükleniyor...</p></div>`;
+  try{
+    // Index gerektirmeyen sorgu - sadece createdAt
+    const q=query(collection(db,'posts'),orderBy('createdAt','desc'),limit(50));
+    const snap=await getDocs(q);
+    allPosts=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Client side filtrele
+    const filtered=group==='all'?allPosts:allPosts.filter(p=>p.group===group);
+    renderPosts(filtered);
+  }catch(e){document.getElementById('postsList').innerHTML=`<div class="empty"><span class="ee">😔</span><p>${e.message}</p></div>`;}
+}
+
+function renderPosts(posts){
+  if(!posts.length){
+    const isKahvehane=curGroup==='kahvehane';
+    document.getElementById('postsList').innerHTML=isKahvehane
+      ?`<div class="kahvehane-banner"><div style="font-size:32px;">☕</div><div><h4>Kahvehane</h4><p>Erkekler giremez! Dert anlatın, gülün, sohbet edin 😄</p></div></div><div class="empty"><span class="ee">☕</span><h3>Kahvehane boş</h3><p>İlk sohbeti sen başlat!</p></div>`
+      :`<div class="empty"><span class="ee">💬</span><h3>Henüz gönderi yok</h3><p>İlk paylaşımı sen yap! ✏️</p></div>`;
+    return;
+  }
+  let html='';
+  if(curGroup==='kahvehane')html=`<div class="kahvehane-banner"><div style="font-size:32px;">☕</div><div><h4>Kahvehane</h4><p>Erkekler giremez! Sadece anneler 😄</p></div></div>`;
+  html+=posts.map(p=>renderPostCard(p)).join('');
+  document.getElementById('postsList').innerHTML=html;
+}
+
+function renderPostCard(p){
+  const liked=cUser&&p.likedBy&&p.likedBy.includes(cUser.uid);
+  let imgs='';if(p.images&&p.images.length){const c=['','c1','c2','c3'][Math.min(p.images.length,3)];imgs=`<div class="post-img-grid ${c}">${p.images.slice(0,3).map(img=>`<img src="${img}" onclick="openImg('${img}')" loading="lazy">`).join('')}</div>`;}
+  const long=p.text&&p.text.length>200;
+  const txt=long?`<p class="post-text collapsed" id="txt-${p.id}">${p.text}</p><button class="read-more" onclick="expandText('${p.id}',event)">Devamını oku</button>`:`<p class="post-text">${p.text||''}</p>`;
+  const gtagClass=p.group==='kahvehane'?'post-gtag kahvehane':'post-gtag';
+  return `<div class="post-card" id="post-${p.id}"><div class="post-main"><div class="post-header"><div class="p-ava" data-uid="${p.authorId}" data-name="${p.authorName||'Anne'}" onclick="openUserProfileById(this)">${gi(p.authorName)}</div><div class="post-meta"><div class="post-author" data-uid="${p.authorId}" data-name="${p.authorName||'Anne'}" onclick="openUserProfileById(this)">${p.authorName||'Anne'}</div><div class="post-sub"><span class="post-time">${timeAgo(p.createdAt)}</span><span class="${gtagClass}">${gLabels[p.group]||p.group}</span></div></div><button class="post-more" onclick="openPostOptions('${p.id}','${p.authorId||''}')">⋯</button></div>${txt}${imgs}</div><div class="post-actions"><button class="action-btn ${liked?'liked':''}" id="like-${p.id}" onclick="toggleLike('${p.id}')">${liked?'❤️':'🤍'} <span id="lc-${p.id}">${p.likes||0}</span></button><button class="action-btn" onclick="toggleComments('${p.id}')">💬 <span id="cc-${p.id}">${p.commentCount||0}</span></button><button class="action-btn" onclick="sharePD('${p.id}')">📤</button></div><div class="comments-section" id="cms-${p.id}" style="display:none;"><div id="cml-${p.id}"></div><div class="c-input-row"><div class="c-ava">${gi(cUser?.displayName)}</div><div class="c-input-wrap"><textarea class="c-input" id="ci-${p.id}" placeholder="Yorum yaz..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendComment('${p.id}')}"></textarea><button class="c-send" onclick="sendComment('${p.id}')">➤</button></div></div></div></div>`;
+}
+
+window.toggleComments=async pid=>{const s=document.getElementById(`cms-${pid}`);const o=s.style.display!=='none';s.style.display=o?'none':'block';if(!o)await loadComments(pid);};
+
+async function loadComments(pid){
+  const l=document.getElementById(`cml-${pid}`);l.innerHTML='<p style="font-size:12px;color:var(--gray);padding:4px 0 8px;">Yükleniyor...</p>';
+  try{const q=query(collection(db,'posts',pid,'comments'),orderBy('createdAt','asc'),limit(30));const snap=await getDocs(q);const cs=snap.docs.map(d=>({id:d.id,...d.data()}));l.innerHTML=cs.length?cs.map(c=>renderComment(pid,c)).join(''):'<p style="font-size:12px;color:var(--gray);padding:4px 0 8px;">Henüz yorum yok. İlk yorumu yap!</p>';}
+  catch(e){l.innerHTML=`<p style="font-size:12px;color:red;">${e.message}</p>`;}
+}
+
+function renderComment(pid,c){
+  const reps=(c.replies||[]).map(r=>`<div class="reply-row"><div class="c-ava" style="width:24px;height:24px;font-size:10px;cursor:pointer;" data-uid="${r.authorId||''}" data-name="${r.authorName||'Anne'}" onclick="openUserProfileById(this)">${gi(r.authorName)}</div><div class="reply-bbl"><div class="reply-author">${r.authorName}</div><div class="reply-text">${r.text}</div></div></div>`).join('');
+  return `<div class="comment-item" id="cm-${c.id}"><div class="c-ava" onclick="openUserProfile('${c.authorId||''}','${(c.authorName||'Anne').replace(/'/g,"\\'")}'")">${gi(c.authorName)}</div><div class="c-bubble"><div class="c-inner"><div class="c-author" onclick="openUserProfile('${c.authorId||''}','${(c.authorName||'Anne').replace(/'/g,"\\'")}'")">${c.authorName||'Anne'}</div><div class="c-text">${c.text||''}</div></div><div class="c-meta"><span class="c-time">${timeAgo(c.createdAt)}</span><button class="c-like" onclick="likeComment('${pid}','${c.id}',this)">❤️ ${c.likes||0}</button><button class="c-reply-btn" onclick="startReply('${pid}','${c.id}','${(c.authorName||'Anne').replace(/'/g,"\\'")}')">Yanıtla</button></div>${reps}<div id="ri-${c.id}" style="display:none;margin-top:6px;"><div class="c-input-wrap" style="border-radius:12px;"><textarea class="c-input" id="rt-${c.id}" placeholder="Yanıtla..." rows="1" oninput="autoResize(this)"></textarea><button class="c-send" onclick="sendReply('${pid}','${c.id}')">➤</button></div></div></div></div>`;
+}
+
+window.sendComment=async pid=>{
+  if(!cUser){showToast('Önce giriş yap!','error');return;}
+  const inp=document.getElementById(`ci-${pid}`),text=inp.value.trim();if(!text)return;
+  try{
+    await addDoc(collection(db,'posts',pid,'comments'),{text,authorId:cUser.uid,authorName:cUser.displayName||'Anne',likes:0,replies:[],createdAt:serverTimestamp()});
+    await updateDoc(doc(db,'posts',pid),{commentCount:increment(1)});
+    // Gönderi sahibine bildirim gönder
+    const postData=allPosts.find(x=>x.id===pid);
+    if(postData&&postData.authorId&&postData.authorId!==cUser.uid){
+      try{await addDoc(collection(db,'notifications'),{
+        toUserId:postData.authorId,fromUserId:cUser.uid,
+        fromName:cUser.displayName||'Anne',
+        type:'comment',message:`${cUser.displayName||'Anne'} gönderine yorum yaptı`,
+        postId:pid,read:false,createdAt:serverTimestamp()
+      });}catch(e){}
+    }
+    const p=allPosts.find(x=>x.id===pid);if(p){p.commentCount=(p.commentCount||0)+1;document.getElementById(`cc-${pid}`).textContent=p.commentCount;}
+    inp.value='';inp.style.height='auto';await loadComments(pid);
+  }
+  catch(e){showToast('Hata: '+e.message,'error');}
+};
+window.startReply=(pid,cid,an)=>{const el=document.getElementById(`ri-${cid}`);el.style.display=el.style.display==='none'?'block':'none';const inp=document.getElementById(`rt-${cid}`);if(inp){inp.value=`@${an} `;inp.focus();}};
+window.sendReply=async(pid,cid)=>{
+  if(!cUser){showToast('Önce giriş yap!','error');return;}
+  const inp=document.getElementById(`rt-${cid}`),text=inp.value.trim();if(!text)return;
+  try{await updateDoc(doc(db,'posts',pid,'comments',cid),{replies:arrayUnion({text,authorId:cUser.uid,authorName:cUser.displayName||'Anne',createdAt:new Date().toISOString()})});inp.value='';document.getElementById(`ri-${cid}`).style.display='none';await loadComments(pid);}
+  catch(e){showToast('Hata: '+e.message,'error');}
+};
+window.likeComment=async(pid,cid,btn)=>{
+  if(!cUser){showToast('Önce giriş yap!','error');return;}
+  try{await updateDoc(doc(db,'posts',pid,'comments',cid),{likes:increment(1)});const cur=parseInt(btn.textContent.replace('❤️','').trim())||0;btn.textContent=`❤️ ${cur+1}`;btn.style.color='var(--rose)';}catch(e){}
+};
+window.toggleLike=async pid=>{
+  if(!cUser){showToast('Önce giriş yap!','error');return;}
+  const p=allPosts.find(x=>x.id===pid);if(!p)return;
+  const liked=p.likedBy&&p.likedBy.includes(cUser.uid);
+  try{await updateDoc(doc(db,'posts',pid),{likes:increment(liked?-1:1),likedBy:liked?arrayRemove(cUser.uid):arrayUnion(cUser.uid)});p.likes=(p.likes||0)+(liked?-1:1);if(!p.likedBy)p.likedBy=[];if(liked)p.likedBy=p.likedBy.filter(id=>id!==cUser.uid);else p.likedBy.push(cUser.uid);const btn=document.getElementById(`like-${pid}`);btn.className=`action-btn ${!liked?'liked':''}`;btn.innerHTML=`${!liked?'❤️':'🤍'} <span id="lc-${pid}">${p.likes}</span>`;}catch(e){}
+};
+
+// NEW POST
+window.openNewPost=()=>{if(!cUser){showToast('Önce giriş yap!','error');return;}openModal('modalNewPost');};
+window.handlePostImages=e=>{postImgFiles=Array.from(e.target.files).slice(0,4);document.getElementById('postImgPreview').innerHTML=postImgFiles.map((f,i)=>`<div class="photo-prev-item"><img src="${URL.createObjectURL(f)}"><button class="photo-prev-remove" onclick="removePostImg(${i})">✕</button></div>`).join('');};
+window.removePostImg=idx=>{postImgFiles.splice(idx,1);document.getElementById('postImgPreview').innerHTML=postImgFiles.map((f,i)=>`<div class="photo-prev-item"><img src="${URL.createObjectURL(f)}"><button class="photo-prev-remove" onclick="removePostImg(${i})">✕</button></div>`).join('');};
+window.submitPost=async()=>{
+  if(!cUser){showToast('Önce giriş yap!','error');return;}
+  const text=document.getElementById('newPostText').value.trim();
+  if(!text&&!postImgFiles.length){showToast('⚠️ Bir şeyler yaz veya fotoğraf ekle!','error');return;}
+  const btn=document.getElementById('submitPostBtn');btn.disabled=true;btn.textContent='⏳ Paylaşılıyor...';
+  let images=[];
+  try{
+    if(postImgFiles.length){showToast('📸 Fotoğraflar yükleniyor...');images=await uploadMany(postImgFiles,null,null);}
+    await addDoc(collection(db,'posts'),{text,images,group:selPostGroup,authorId:cUser.uid,authorName:cUser.displayName||'Anne',likes:0,likedBy:[],commentCount:0,createdAt:serverTimestamp()});
+    closeModal('modalNewPost');document.getElementById('newPostText').value='';document.getElementById('postImgPreview').innerHTML='';postImgFiles=[];
+    showToast('✅ Paylaşımın yayında!','success');loadPosts(curGroup);
+  }catch(e){showToast('Hata: '+e.message,'error');}
+  finally{btn.disabled=false;btn.textContent='Paylaş 🚀';}
+};
+
+// USER PROFILE
+// Data attribute ile profil açma - tırnak sorunu olmaz
+window.openUserProfileById=(el)=>{
+  const uid=el.getAttribute('data-uid');
+  const name=el.getAttribute('data-name');
+  openUserProfile(uid,name);
+};
+
+window.openUserProfile=async(userId,userName)=>{
+  // Güvenlik kontrolleri
+  if(!userId||userId==='undefined'||userId==='null'||userId===''){
+    showToast('Profil bulunamadı','error');return;
+  }
+  if(!cUser){showToast('Profil için giriş yap!','error');return;}
+  // Kendi profiline tıklanırsa profil sayfasına git
+  if(userId===cUser.uid){
+    closeModal('modalDetail');closeModal('modalNewPost');
+    switchTab('profile');return;
+  }
+  curTargetUserId=userId;
+  curTargetUserName=userName||'Anne';
+  // Modalı hemen aç, veriyi arka planda yükle
+  document.getElementById('userAvaModal').textContent=gi(curTargetUserName);
+  document.getElementById('userNameModal').textContent=curTargetUserName;
+  document.getElementById('userMetaModal').textContent='Yükleniyor...';
+  document.getElementById('userStatListings').textContent='...';
+  document.getElementById('userStatFollowers').textContent='...';
+  document.getElementById('userStatRating').textContent='...';
+  document.getElementById('userReviewsList').innerHTML='<p style="font-size:13px;color:var(--gray);text-align:center;padding:16px 0;">Yükleniyor...</p>';
+  const fBtn=document.getElementById('followBtn');
+  fBtn.className='follow-btn not-following';
+  fBtn.textContent='➕ Takip Et';
+  openModal('modalUserProfile');
+  // Veriyi yükle
+  try{
+    const [uDoc,myDoc]=await Promise.all([
+      getDoc(doc(db,'users',userId)),
+      getDoc(doc(db,'users',cUser.uid))
+    ]);
+    if(uDoc.exists()){
+      const d=uDoc.data();
+      document.getElementById('userMetaModal').textContent='Kizcs üyesi';
+      document.getElementById('userStatListings').textContent=d.listingCount||0;
+      document.getElementById('userStatFollowers').textContent=(d.followers||[]).length;
+      const r=d.ratingCount>0?((d.ratingSum||0)/d.ratingCount).toFixed(1):'-';
+      document.getElementById('userStatRating').textContent=r;
+      // Takip kontrolü
+      const myFollowing=myDoc.exists()?(myDoc.data().following||[]):[];
+      const isFollowing=myFollowing.includes(userId);
+      fBtn.className=`follow-btn ${isFollowing?'following':'not-following'}`;
+      fBtn.textContent=isFollowing?'✓ Takip Ediliyor':'➕ Takip Et';
+    } else {
+      document.getElementById('userMetaModal').textContent='Kullanıcı bulunamadı';
+    }
+    // Değerlendirmeleri yükle
+    try{
+      const rSnap=await getDocs(query(collection(db,'reviews'),where('toUserId','==',userId),limit(5)));
+      const reviews=rSnap.docs.map(d=>({id:d.id,...d.data()}));
+      document.getElementById('userReviewsList').innerHTML=reviews.length
+        ?'<h4 style="font-size:14px;font-weight:600;margin-bottom:10px;">Değerlendirmeler</h4>'+reviews.map(r=>`<div class="review-card"><div class="review-stars">${'⭐'.repeat(r.rating||0)}</div><div class="review-text">${r.comment||''}</div><div class="review-author">— ${r.fromName||'Anne'}</div></div>`).join('')
+        :'<p style="font-size:13px;color:var(--gray);text-align:center;padding:16px 0;">Henüz değerlendirme yok</p>';
+    }catch(e){document.getElementById('userReviewsList').innerHTML='';}
+  }catch(e){
+    console.error('Profil yükleme hatası:',e);
+    document.getElementById('userMetaModal').textContent='Yüklenemedi';
+  }
+};
+
+// FOLLOW
+window.toggleFollow=async()=>{
+  if(!cUser){showToast('Önce giriş yap!','error');return;}
+  if(!curTargetUserId)return;
+  try{
+    const myRef=doc(db,'users',cUser.uid);const theirRef=doc(db,'users',curTargetUserId);
+    const myDoc=await getDoc(myRef);const myFollowing=myDoc.exists()?(myDoc.data().following||[]):[];
+    const isFollowing=myFollowing.includes(curTargetUserId);
+    if(isFollowing){
+      await updateDoc(myRef,{following:arrayRemove(curTargetUserId)});
+      await updateDoc(theirRef,{followers:arrayRemove(cUser.uid)});
+      document.getElementById('followBtn').className='follow-btn not-following';
+      document.getElementById('followBtn').textContent='➕ Takip Et';
+      showToast('Takip bırakıldı');
+    }else{
+      await updateDoc(myRef,{following:arrayUnion(curTargetUserId)});
+      await updateDoc(theirRef,{followers:arrayUnion(cUser.uid)});
+      document.getElementById('followBtn').className='follow-btn following';
+      document.getElementById('followBtn').textContent='✓ Takip Ediliyor';
+      showToast('✅ Takip edildi!','success');
+    }
+    loadMyStats();
+  }catch(e){showToast('Hata: '+e.message,'error');}
+};
+
+// REVIEW
+window.openReviewModal=()=>{
+  if(!cUser){showToast('Önce giriş yap!','error');return;}
+  if(curTargetUserId===cUser.uid){showToast('Kendinizi değerlendiremezsiniz!','error');return;}
+  document.getElementById('reviewTargetName').textContent=`${curTargetUserName} için değerlendirme`;
+  selStar=0;updateStars(0);document.getElementById('reviewText').value='';
+  closeModal('modalUserProfile');openModal('modalReview');
+};
+
+window.setStar=n=>{selStar=n;updateStars(n);};
+function updateStars(n){document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('active',i<n));}
+
+window.submitReview=async()=>{
+  if(!cUser){showToast('Önce giriş yap!','error');return;}
+  if(!selStar){showToast('⚠️ Puan seç!','error');return;}
+  const comment=document.getElementById('reviewText').value.trim();
+  try{
+    await addDoc(collection(db,'reviews'),{toUserId:curTargetUserId,fromUserId:cUser.uid,fromName:cUser.displayName||'Anne',rating:selStar,comment,createdAt:serverTimestamp()});
+    await updateDoc(doc(db,'users',curTargetUserId),{ratingSum:increment(selStar),ratingCount:increment(1)});
+    closeModal('modalReview');showToast('✅ Değerlendirme gönderildi!','success');
+  }catch(e){showToast('Hata: '+e.message,'error');}
+};
+
+// MY LISTINGS & REVIEWS
+window.showMyFavorites=async()=>{
+  if(!cUser)return;
+  openModal('modalMyFavorites');
+  document.getElementById('myFavoritesContent').innerHTML='<p style="text-align:center;color:var(--gray);padding:20px;">Yükleniyor...</p>';
+  try{
+    const uDoc=await getDoc(doc(db,'users',cUser.uid));
+    const favIds=uDoc.exists()?(uDoc.data().favorites||[]):[];
+    const favEl=document.getElementById('statFavs');if(favEl)favEl.textContent=favIds.length;
+    if(!favIds.length){
+      document.getElementById('myFavoritesContent').innerHTML='<div class="empty"><span class="ee">❤️</span><h3>Favori yok</h3><p>İlan kartındaki ❤️ ile favori ekle!</p></div>';
+      return;
+    }
+    // Favori ilanları yükle (max 20)
+    const favListings=[];
+    for(const fid of favIds.slice(0,20)){
+      try{const d=await getDoc(doc(db,'listings',fid));if(d.exists())favListings.push({id:d.id,...d.data()});}catch(e){}
+    }
+    if(!favListings.length){
+      document.getElementById('myFavoritesContent').innerHTML='<div class="empty"><span class="ee">😔</span><p>Favorilerdeki ilanlar silinmiş olabilir.</p></div>';
+      return;
+    }
+    document.getElementById('myFavoritesContent').innerHTML=favListings.map(l=>`
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #F5F5F5;align-items:center;cursor:pointer;" onclick="closeModal('modalMyFavorites');openListing('${l.id}')">
+        <div style="width:60px;height:60px;border-radius:12px;background:linear-gradient(135deg,#FFD6E7,#C8F4F1);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;">
+          ${l.photos&&l.photos[0]?`<img src="${l.photos[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">`:'📦'}
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:600;font-size:13px;">${l.title}</div>
+          <div style="color:var(--rose);font-weight:700;font-size:15px;">${Number(l.price||0).toLocaleString('tr-TR')}₺</div>
+          <div style="font-size:11px;color:var(--gray);">📍 ${l.city||'Türkiye'}</div>
+        </div>
+      </div>`).join('');
+  }catch(e){document.getElementById('myFavoritesContent').innerHTML=`<p style="color:red;padding:16px;">${e.message}</p>`;}
+};
+
+window.showMyListings=async()=>{
+  if(!cUser)return;
+  document.getElementById('myListingsContent').innerHTML='<p style="text-align:center;color:var(--gray);padding:20px;">Yükleniyor...</p>';openModal('modalMyListings');
+  const q=query(collection(db,'listings'),where('sellerId','==',cUser.uid),orderBy('createdAt','desc'));
+  const snap=await getDocs(q);const myL=snap.docs.map(d=>({id:d.id,...d.data()}));
+  document.getElementById('statListings').textContent=myL.length;
+  if(!myL.length){document.getElementById('myListingsContent').innerHTML=`<div class="empty"><span class="ee">📋</span><h3>Henüz ilan yok</h3><p>İlk ilanını ver!</p></div>`;return;}
+  document.getElementById('myListingsContent').innerHTML=myL.map(l=>`<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #F5F5F5;align-items:center;"><div style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#FFD6E7,#C8F4F1);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;">${l.photos&&l.photos[0]?`<img src="${l.photos[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">`:cEmojis[l.category]||'📦'}</div><div style="flex:1;"><div style="font-weight:600;font-size:13px;">${l.title}</div><div style="color:var(--rose);font-weight:700;font-size:15px;">${Number(l.price).toLocaleString('tr-TR')}₺</div><span class="listing-cond cond-${l.condition}">${cLabels[l.condition]||'İyi'}</span></div></div>`).join('');
+};
+
+window.showMyReviews=async()=>{
+  if(!cUser)return;
+  document.getElementById('myReviewsContent').innerHTML='<p style="text-align:center;color:var(--gray);padding:20px;">Yükleniyor...</p>';openModal('modalMyReviews');
+  try{
+    const q=query(collection(db,'reviews'),where('toUserId','==',cUser.uid),limit(20));
+    const snap=await getDocs(q);const reviews=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!reviews.length){document.getElementById('myReviewsContent').innerHTML=`<div class="empty"><span class="ee">⭐</span><h3>Henüz değerlendirme yok</h3><p>Satış yaptıkça değerlendirmeler gelecek!</p></div>`;return;}
+    document.getElementById('myReviewsContent').innerHTML=reviews.map(r=>`<div class="review-card"><div class="review-stars">${'⭐'.repeat(r.rating)}</div><div class="review-text">${r.comment||''}</div><div class="review-author">— ${r.fromName||'Anne'} · ${timeAgo(r.createdAt)}</div></div>`).join('');
+  }catch(e){document.getElementById('myReviewsContent').innerHTML=`<p style="color:red;padding:20px;">${e.message}</p>`;}
+};
+
+window.showFollowers=async()=>{
+  if(!cUser)return;
+  document.getElementById('followersContent').innerHTML='<p style="text-align:center;color:var(--gray);padding:20px;">Yükleniyor...</p>';openModal('modalFollowers');
+  try{
+    const uDoc=await getDoc(doc(db,'users',cUser.uid));
+    const followers=uDoc.exists()?(uDoc.data().followers||[]):[];
+    if(!followers.length){document.getElementById('followersContent').innerHTML=`<div class="empty"><span class="ee">👥</span><h3>Henüz takipçi yok</h3><p>Paylaşım yaptıkça takipçilerin artacak!</p></div>`;return;}
+    document.getElementById('followersContent').innerHTML=followers.map(fId=>`<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #F5F5F5;"><div class="p-ava" style="cursor:default;">?</div><div style="flex:1;font-size:14px;font-weight:500;">Takipçi</div></div>`).join('');
+  }catch(e){}
+};
+
+// POST OPTIONS
+window.openPostOptions=(pid,aid)=>{curPostId=pid;document.getElementById('deletePostOption').style.display=(cUser&&cUser.uid===aid)?'flex':'none';openModal('modalPostOptions');};
+window.reportPostAction=async()=>{if(!cUser){closeModal('modalPostOptions');showToast('Önce giriş yap!','error');return;}try{await addDoc(collection(db,'reports'),{type:'post',targetId:curPostId,reporterId:cUser.uid,createdAt:serverTimestamp(),status:'pending'});}catch(e){}closeModal('modalPostOptions');showToast('🚨 Şikayet alındı!','success');};
+window.sharePostLink=()=>{navigator.clipboard.writeText(location.href+'#post-'+curPostId).catch(()=>{});closeModal('modalPostOptions');showToast('🔗 Kopyalandı!');};
+window.sharePD=pid=>{if(navigator.share)navigator.share({title:'Kizcs',url:location.href+'#post-'+pid}).catch(()=>{});else{navigator.clipboard.writeText(location.href+'#post-'+pid).catch(()=>{});showToast('🔗 Kopyalandı!');}};
+window.deleteCurrentPost=async()=>{if(!curPostId||!cUser)return;try{await deleteDoc(doc(db,'posts',curPostId));document.getElementById(`post-${curPostId}`)?.remove();closeModal('modalPostOptions');showToast('🗑️ Silindi');}catch(e){showToast('Hata: '+e.message,'error');}};
+
+
+let selectedReportReason='';
+
+window.selectReportReason=(el,reason)=>{
+  selectedReportReason=reason;
+  document.getElementById('reportReasonsList').style.display='none';
+  document.getElementById('reportDetailSection').style.display='block';
+  document.getElementById('selectedReasonLabel').textContent='Seçilen: '+reason;
+  document.getElementById('reportDesc').value='';
+};
+
+window.backToReasons=()=>{
+  document.getElementById('reportReasonsList').style.display='block';
+  document.getElementById('reportDetailSection').style.display='none';
+  selectedReportReason='';
+};
+
+window.submitReport=async()=>{
+  if(!cUser){closeModal('modalReport');showToast('Önce giriş yap!','error');return;}
+  if(!selectedReportReason){showToast('Sebep seç!','error');return;}
+  const desc=document.getElementById('reportDesc').value.trim();
+  try{
+    await addDoc(collection(db,'reports'),{
+      reporterId:cUser.uid,
+      reporterName:cUser.displayName||'Anne',
+      reason:selectedReportReason,
+      description:desc,
+      targetId:curTargetUserId||null,
+      targetType:curTargetUserId?'user':'general',
+      status:'pending',
+      createdAt:serverTimestamp()
+    });
+  }catch(e){}
+  closeModal('modalReport');
+  backToReasons();
+  showToast('🚨 Şikayetin alındı, inceleyeceğiz!','success');
+};
+
+// Şifremi Unuttum
+window.openForgotPassword=()=>{
+  document.getElementById('forgotEmail').value='';
+  document.getElementById('forgotError').style.display='none';
+  document.getElementById('resetSuccess').style.display='none';
+  document.getElementById('resetBtn').textContent='Sıfırlama E-postası Gönder';
+  document.getElementById('resetBtn').disabled=false;
+  openModal('modalForgot');
+};
+
+window.sendReset=async()=>{
+  const email=document.getElementById('forgotEmail').value.trim();
+  const errEl=document.getElementById('forgotError');
+  errEl.style.display='none';
+  if(!email){errEl.textContent='E-posta gir!';errEl.style.display='block';return;}
+  const btn=document.getElementById('resetBtn');
+  btn.disabled=true;btn.textContent='Gönderiliyor...';
+  try{
+    await sendPasswordResetEmail(auth,email);
+    document.getElementById('resetSuccess').style.display='block';
+    btn.style.display='none';
+  }catch(e){
+    const msgs={'auth/user-not-found':'Bu e-posta ile kayıtlı hesap yok.','auth/invalid-email':'Geçersiz e-posta adresi.'};
+    errEl.textContent=msgs[e.code]||e.message;
+    errEl.style.display='block';
+    btn.disabled=false;btn.textContent='Sıfırlama E-postası Gönder';
+  }
+};
+
+// HELPERS
+window.switchTab=tab=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('adminPanel').style.display='none';document.getElementById('screen-'+tab).classList.add('active');document.getElementById('nav-'+tab).classList.add('active');if(tab==='profile')loadMyStats();};
+window.filterCat=(el,cat)=>{document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');loadListings(cat);};
+window.switchGroup=(el,group)=>{document.querySelectorAll('.group-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');curGroup=group;loadPosts(group);};
+window.selectGroup=(el,group)=>{document.querySelectorAll('.group-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selPostGroup=group;};
+window.selectCondition=(el,val)=>{document.querySelectorAll('.cond-opt').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');selCond=val;};
+window.toggleFav=async(e,btn,listingId)=>{
+  e.stopPropagation();
+  if(!cUser){showToast('Favori için giriş yap!','error');return;}
+  const isFav=btn.textContent==='❤️';
+  btn.textContent=isFav?'🤍':'❤️';
+  try{
+    await updateDoc(doc(db,'users',cUser.uid),{
+      favorites: isFav ? arrayRemove(listingId) : arrayUnion(listingId)
+    });
+    showToast(isFav?'Favorilerden çıkarıldı':'Favorilere eklendi ❤️');
+    if(!isFav) loadMyStats();
+  }catch(e){btn.textContent=isFav?'❤️':'🤍';}
+};
+window.expandText=(pid,e)=>{document.getElementById(`txt-${pid}`).classList.remove('collapsed');e.target.remove();};
+window.openImg=src=>{document.getElementById('imgModalSrc').src=src;document.getElementById('imgModal').classList.add('open');};
+window.closeImgModal=()=>document.getElementById('imgModal').classList.remove('open');
+window.autoResize=el=>{el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';};
+window.openModal=id=>document.getElementById(id).classList.add('open');
+window.closeModal=id=>document.getElementById(id).classList.remove('open');
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+window.showToast=(msg,type='')=>{const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type?' '+type:'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);};
+function timeAgo(ts){if(!ts)return'Az önce';const d=ts.toDate?ts.toDate():new Date(ts);const diff=Math.floor((Date.now()-d)/1000);if(diff<60)return'Az önce';if(diff<3600)return`${Math.floor(diff/60)} dk önce`;if(diff<86400)return`${Math.floor(diff/3600)} saat önce`;return`${Math.floor(diff/86400)} gün önce`;}document.getElementById('searchInput').addEventListener('input',function(){const q=this.value.toLowerCase();if(!q){renderListings(allListings);return;}renderListings(allListings.filter(l=>l.title.toLowerCase().includes(q)||(l.description||'').toLowerCase().includes(q)));});
+
+</script>
+</body>
+</html>
